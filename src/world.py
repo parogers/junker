@@ -10,43 +10,41 @@ from random import randint
 
 from vector import vector
 from sprites import Tank, Enemy, Shot
-from level import Tileset, Level, Layer, Camera
+from level import Tileset, Level, Camera
 
-def gen_circle(layer, centre, size, value, var=0):
+def gen_circle(level, centre, size, value, var=0):
     (centR, centC) = centre
     (w, h) = size
     for r in range(centR-h, centR+h+1):
         for c in range(centC-h, centC+h+1):
             if ((r-centR)**2 + (c-centC)**2 <= w*h+1+random.randint(0,var)):
-                layer[r,c] = value
+                level[r,c,0] = value
 
 def generate_level(world, size):
     lvl = Level(world, *size)
-    layer = Layer()
-    layer.bg = "dirt"
-    lvl.add_layer(layer)
+    lvl.bg = "dirt"
 
     for r in range(lvl.rows):
         for c in range(lvl.cols):
-            layer[r,c] = "grass"
+            lvl[r,c,0] = "grass"
 
     for n in range(20):
         r = randint(0, lvl.rows-1)
         c = randint(0, lvl.cols-1)
-        gen_circle(layer, (r, c), (3, 3), "water", 2)
+        gen_circle(lvl, (r, c), (3, 3), "water", 2)
 
     for n in range(10):
         r = randint(0, lvl.rows-1)
         c = randint(0, lvl.cols-1)
-        gen_circle(layer, (r, c), (3, 3), "tree", 2)
+        gen_circle(lvl, (r, c), (3, 3), "tree", 2)
 
     for r in range(lvl.rows):
-        layer[r,0] = "stone"
+        lvl[r,0,0] = "stone"
         if (random.random() < 0.8):
-            layer[r,1] = "stone"
-        layer[r,lvl.cols-1] = "stone"
+            lvl[r,1,0] = "stone"
+        lvl[r,lvl.cols-1,0] = "stone"
         if (random.random() < 0.8):
-            layer[r,lvl.cols-2] = "stone"
+            lvl[r,lvl.cols-2,0] = "stone"
 
     return lvl
 
@@ -77,15 +75,16 @@ class World(object):
 
     def setup(this):
         # Load the terrains
-        for (name, fname, solid) in (
-            ("grass", "grass.png", False),
-            ("water", "water.png", True),
-            ("dirt", "dirt.png", False),
-            ("stone", "stone.png", True),
-            ("tree", "tree.png", True),
+        for (name, fname, solid, dmg) in (
+            ("grass", "grass.png", False, 0),
+            ("water", "water.png", False, 0),
+            ("dirt", "dirt.png", False, 0),
+            ("stone", "stone.png", True, 1),
+            ("tree", "tree.png", True, 1),
             ):
             terr = Tileset(name, Loader.loader.get(os.path.join("terrains", fname)))
             terr.solid = solid
+            terr.damage = dmg
             this.tilesets[terr.name] = terr
 
         this.player = Tank(this)

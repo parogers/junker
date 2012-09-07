@@ -42,6 +42,10 @@ class Base(pygame.sprite.Sprite):
         this.accel = vector()
         this.world = world
 
+    @property
+    def level(this):
+        return this.world.level
+
     def take_damage(this, dmg):
         pass
 
@@ -61,6 +65,7 @@ class Shot(Base):
         this.rect = this.origImage.get_rect()
         this.owner = owner
         this.damage = 1
+        this.lifetime = 1
 
     def update(this, dt):
         # Have the projectile rotate as it moves
@@ -68,19 +73,32 @@ class Shot(Base):
         this.image = pygame.transform.rotozoom(this.origImage, int(this.angle/90)*90, 1)
         this.pos += this.vel*dt
         this.rect.center = (int(this.pos.x), int(this.pos.y))
-        if (this.rect.right > this.world.area.right or
-            this.rect.left < this.world.area.left or
-            this.rect.top < this.world.area.top or
-            this.rect.bottom > this.world.area.bottom):
+#        if (this.rect.right > this.world.area.right or
+#            this.rect.left < this.world.area.left or
+#            this.rect.top < this.world.area.top or
+#            this.rect.bottom > this.world.area.bottom):
+#            this.kill()
+#            return
+        if (this.lifetime < 0):
             this.kill()
-            return
+
+        this.lifetime -= dt
+
         # Check for collisions
         if (this.owner == this.world.player):
-            # Check for an enemy collision
+            # Owned by the player, check for an enemy collision
             hit = pygame.sprite.spritecollideany(this, this.world.enemies)
             if (hit):
                 hit.take_damage(this.damage)
                 this.kill()
+            # Check for a collision with the terrain
+            (r, c, off) = this.level.map_to_grid(this.pos)
+            if (this.level[r,c,0].solid):
+                smoke = Explosion(this.world, this.pos)
+                this.world.explosions.add(smoke)
+                this.kill()
+                del this.level[r,c,0]
+                this.level.update_cache_single((r, c, 0))
         else:
             # Check for a collision with the player
             if (this.world.player.colliderect(hit.rect)):
@@ -91,22 +109,16 @@ class TankTurret(Base):
     origImage = None
     angle = 0
 
-    def __init__(this, ship):
-        super(TankTurret, this).__init__(ship.world)
+    def __init__(this, tankBase):
+        super(TankTurret, this).__init__(tankBase.world)
         this.origImage = Loader.loader.get("tank/turret.png")
         this.image = this.origImage
         this.rect = this.origImage.get_rect()
-        this.ship = ship
-
-    def update(this, dt):
-#        this.image = pygame.transform.rotozoom(this.origImage, -this.angle, 1)
-#        this.rect.size = this.image.get_size()
-        pass
+        this.tankBase = tankBase
 
     def update_image(this):
         this.image = pygame.transform.rotozoom(this.origImage, -this.angle, 1)
         this.rect.size = this.image.get_size()
-        #this.rect.center = this.ship.rect.center
 
     # Returns the position of the barrel tip
     @property
@@ -131,7 +143,7 @@ class Tank(Base):
     # The "cooldown time" for shooting projectiles
     shootCooldown = 0.1
     turret = None
-    # The angle of rotation of the ship
+    # The angle of rotation of the tank
     angle = 0
     smokes = None
     maxSmokes = 15
@@ -151,39 +163,40 @@ class Tank(Base):
     def point_to(this, pos):
         this.turret.angle = math.degrees(math.atan2(pos[1]-this.rect.center[1], pos[0]-this.rect.center[0]))
 
-    # Returns a unit vector pointing in the forward direction for this ship
+    # Returns a unit vector pointing in the forward direction for this tank
     @property
     def forward(this):
         return vector.from_angle(this.angle)
 
-    @property
-    def level(this):
-        return this.world.level
-
     def update(this, dt):
-        vel = vector(0,0)
+        velx = vector(0,0)
+        vely = vector(0,0)
         if (this.controlForward):
-            vel += vector(0,-1)
+            vely = vector(0,-1)
         elif (this.controlBackward):
-            vel += vector(0,1)
+            vely = vector(0,1)
         if (this.controlLeft):
-            vel += vector(-1,0)
+            velx = vector(-1,0)
         elif (this.controlRight):
-            vel += vector(1,0)
+            velx = vector(1,0)
+
+        vel = velx + vely
 
         this.vel = vel.unit()*this.maxSpeed
         if (abs(this.vel) > 0):
             this.angle = -this.vel.angle
-            this.frame -= 10*dt
 
         this.image = pygame.transform.rotozoom(this.anim[this.frame], this.angle, 1)
 
         # Update the position (centre of the square)
-        newpos = this.pos + this.vel*dt
-        # Check if the new position is blocked by the terrain
-        (r, c, off) = this.level.map_to_grid(newpos.toint())
-        if (not this.level.check_solid(r, c)):
-            this.pos = newpos
+        if (abs(this.vel) > 0):
+            for newpos in (this.pos + this.vel*dt, this.pos + velx, this.pos + vely):
+                # Check if the new position is blocked by the terrain
+                (r, c, off) = this.level.map_to_grid(newpos.toint())
+                if (not this.level[r,c,0].solid):
+                    this.pos = newpos
+                    this.frame -= 10*dt
+                    break
 
         this.rect.size = this.image.get_size()
         this.rect.center = (int(this.pos.x), int(this.pos.y))
@@ -255,13 +268,11 @@ class Enemy(Base):
             this.vel.x = abs(this.vel.x)
 
     def take_damage(this, dmg):
-        smoke = Explosion(this.world)
-        smoke.pos = this.pos
+        smoke = Explosion(this.world, this.pos)
         smoke.vel = this.vel
         this.world.explosions.add(smoke)
 
-        smoke = Smoke(this.world)
-        smoke.pos = this.pos
+        smoke = Smoke(this.world, this.pos)
         smoke.vel = this.vel
         this.world.explosions.add(smoke)
 
@@ -270,7 +281,7 @@ class Enemy(Base):
 class Smoke(Base):
     frames = None
 
-    def __init__(this, world):
+    def __init__(this, world, pos=None):
         super(Smoke, this).__init__(world)
         smokeImg = Loader.loader.get("smoke-mask.png")
         if (not Smoke.frames):
@@ -291,6 +302,7 @@ class Smoke(Base):
         this.fps = 10+random.random()*2
         this.image = this.frames[0]
         this.rect = this.image.get_rect()
+        if (pos): this.pos = pos
 
     def update(this, dt):
         this.pos += this.vel*dt/4
@@ -305,7 +317,7 @@ class Smoke(Base):
 class Explosion(Base):
     frames = None
 
-    def __init__(this, world):
+    def __init__(this, world, pos=None):
         super(Explosion, this).__init__(world)
         expImg = Loader.loader.get("explosion-mask.png")
         if (not Explosion.frames):
@@ -335,6 +347,7 @@ class Explosion(Base):
         this.fps = 14
         this.image = this.frames[0]
         this.rect = this.image.get_rect()
+        if (pos): this.pos = pos
 
     def update(this, dt):
         this.pos += this.vel*dt/4

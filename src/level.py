@@ -14,60 +14,63 @@ class Tileset(object):
     size = None
     tiles = None
     solid = False
+    # How much damage the tile can sustain before breaking (0=indestructable)
+    damage = 0
 
     def __init__(this, name, img):
         this.name = name
         this.tiles = {}
-        (w, h) = img.get_size()
-        cols = 5
-        rows = 3
-        if (w % cols != 0 or h % rows != 0):
-            raise Exception("terrain image wrong size")
-        w /= cols
-        h /= rows
-        this.size = (w, h)
+        if (img):
+            (w, h) = img.get_size()
+            cols = 5
+            rows = 3
+            if (w % cols != 0 or h % rows != 0):
+                raise Exception("terrain image wrong size")
+            w /= cols
+            h /= rows
+            this.size = (w, h)
 
-        # Break up the image into the tiles
-        row = 0
-        col = 0
-        for name in (
-            "topLeftHole",
-            "bottom",
-            "topRightHole",
-            "topLeft",
-            "topRight",
+            # Break up the image into the tiles
+            row = 0
+            col = 0
+            for name in (
+                "topLeftHole",
+                "bottom",
+                "topRightHole",
+                "topLeft",
+                "topRight",
 
-            "right",
-            "base",
-            "left",
-            "bottomLeft",
-            "bottomRight",
+                "right",
+                "base",
+                "left",
+                "bottomLeft",
+                "bottomRight",
 
-            "bottomLeftHole",
-            "top",
-            "bottomRightHole"):
-            surf = img.subsurface(col*w, row*h, w, h)
-            #setattr(this, name, surf)
-            this.tiles[name] = surf
-            col += 1
-            if (col >= cols):
-                row += 1
-                col = 0
+                "bottomLeftHole",
+                "top",
+                "bottomRightHole"):
+                surf = img.subsurface(col*w, row*h, w, h)
+                #setattr(this, name, surf)
+                this.tiles[name] = surf
+                col += 1
+                if (col >= cols):
+                    row += 1
+                    col = 0
 
-        base = this["base"]
-        surf = pygame.Surface((w*2, h*2)).convert()
-        surf.blit(base, (0, 0))
-        surf.blit(base, (TILEW, 0))
-        surf.blit(base, (TILEW, TILEH))
-        surf.blit(base, (0, TILEH))
-        this.tiles["base2"] = surf
+            base = this["base"]
+            surf = pygame.Surface((w*2, h*2)).convert()
+            surf.blit(base, (0, 0))
+            surf.blit(base, (TILEW, 0))
+            surf.blit(base, (TILEW, TILEH))
+            surf.blit(base, (0, TILEH))
+            this.tiles["base2"] = surf
 
     def __getitem__(this, name):
         return this.tiles[name]
 
     def get_layout(this, layer, pos):
         assert(this.name)
-        (r, c) = pos
+        (r, c, h) = pos
 
         # n,w
         topLeftDef = {
@@ -98,16 +101,15 @@ class Tileset(object):
             (1,1) : None
         }
 
-        (r, c) = pos
         name = this.name
-        n = this.connects_to(layer[r-1,c])
-        s = this.connects_to(layer[r+1,c])
-        w = this.connects_to(layer[r,c-1])
-        e = this.connects_to(layer[r,c+1])
-        nw = this.connects_to(layer[r-1,c-1])
-        ne = this.connects_to(layer[r-1,c+1])
-        sw = this.connects_to(layer[r+1,c-1])
-        se = this.connects_to(layer[r+1,c+1])
+        n = this.connects_to(layer[r-1,c,h])
+        s = this.connects_to(layer[r+1,c,h])
+        w = this.connects_to(layer[r,c-1,h])
+        e = this.connects_to(layer[r,c+1,h])
+        nw = this.connects_to(layer[r-1,c-1,h])
+        ne = this.connects_to(layer[r-1,c+1,h])
+        sw = this.connects_to(layer[r+1,c-1,h])
+        se = this.connects_to(layer[r+1,c+1,h])
 
         if (n and w and not nw): 
             topLeft = "bottomRightHole"
@@ -137,54 +139,85 @@ class Tileset(object):
         return (topLeft, topRight, bottomLeft, bottomRight)
 
     def connects_to(this, tileset):
-        return (this.name == tileset)
+        return (this == tileset)
 
-class Layer(object):
-    tiles = None
-    height = 0
-    level = None
-    cached = None
-    bg = None
+## A layer of tiles within a level
+#class Layer(object):
+#    tiles = None
+#    height = 0
+#    level = None
+#    cached = None
+#    bg = None
 
-    def __init__(this):
-        this.tiles = {}
-        this.cached = {}
+#    def __init__(this):
+#        this.tiles = {}
+#        this.cached = {}
 
-    def __getitem__(this, pos):
-        return this.tiles.get(pos, None)
+#    def __getitem__(this, pos):
+#        return this.tiles.get(pos, None)
 
-    def __setitem__(this, pos, tile):
-        this.tiles[pos] = tile
+#    def __setitem__(this, pos, tile):
+#        this.tiles[pos] = tile
 
-    @property
-    def rows(this):
-        return this.level.rows
+#    def __delitem__(this, pos):
+#        del this.tiles[pos]
 
-    @property
-    def cols(this):
-        return this.level.cols
+#    @property
+#    def rows(this):
+#        return this.level.rows
 
-    def update_cache(this):
-        this.cached = {}
-        for (r, c) in this.tiles.keys():
-            tile = this[r,c]
-            if (tile):
-                tileset = this.level.tilesets[tile]
-                this.cached[r,c] = tileset.get_layout(this, (r, c))
+#    @property
+#    def cols(this):
+#        return this.level.cols
 
+# A level consists of a set of layers with stuff on them (player, enemies, etc)
 class Level(object):
-    tiles = None
     layers = None
     world = None
+    bg = None
+    _tiles = None
+    _cached = None
+    # If not None, the level instance will track a list of changes made to the map. This is 
+    # used by the Camera so it knows what cells have to be redrawn.
+    updates = None
 
     def __init__(this, world, rows, cols):
         this.world = world
         this.rows = rows
         this.cols = cols
-        this.layers = []
+        #this.layers = []
         this.templates = {}
         this.tileWidth = TILEW
         this.tileHeight = TILEH
+        this._tiles = {}
+        this._cached = {}
+        this.maxHeight = 0
+        this.empty = Tileset("empty", None)
+
+    # Returns the terrain at the given position (r, c, h)
+    def __getitem__(this, pos):
+        (r, c, h) = pos
+        try:
+            tile = this._tiles[pos]
+        except KeyError:
+            return this.empty
+        else:
+            return this.tilesets[tile]
+
+    def __setitem__(this, pos, value):
+        (r, c, h) = pos
+        if (isinstance(value, basestring)):
+            tile = value
+        else:
+            tile = value.name
+        this.maxHeight = max(this.maxHeight, pos[2])
+        this._tiles[pos] = tile
+
+    def __delitem__(this, pos):
+        try:
+            del this._tiles[pos]
+        except KeyError:
+            pass
 
     @property
     def tilesets(this):
@@ -193,6 +226,7 @@ class Level(object):
     # Converts from map (pixel) to grid position
     def map_to_grid(this, rect):
         if (len(rect) == 4):
+            # Passed in a rectangle
             w = 2*this.tileWidth
             h = 2*this.tileHeight
             r1 = int(rect.y / h)
@@ -204,6 +238,7 @@ class Level(object):
                 int(rect.y) % h)
             return (r1, r2, c1, c2, offset)
         elif (len(rect) == 2):
+            # Passed in a single point
             w = 2*this.tileWidth
             h = 2*this.tileHeight
             row = int(rect[1] / h)
@@ -215,49 +250,66 @@ class Level(object):
         else:
             raise Exception("invalid rect or pos")
 
-    def get_tileset(this, name):
-        return this.tilesets[name]
-
-    def update_cache(this):
-        for layer in this.layers:
-            layer.update_cache()
-
     def render(this, surf, dest, r1, r2, c1, c2):
-        for layer in this.layers:
+        #for layer in this.layers:
+        for h in range(this.maxHeight+1):
             y = dest[1]
             for r in range(r1, r2+1):
                 x = dest[0]
                 for c in range(c1, c2+1):
-                    tile = layer[r,c]
-                    if (layer.bg):
-                        bg = this.tilesets[layer.bg]["base2"]
+                    #tile = layer[r,c]
+                    tileset = this[r,c,h]
+                    if (this.bg):
+                        bg = this.tilesets[this.bg]["base2"]
                         surf.blit(bg, (x, y))
 
-                    if (tile):
-                        tileset = this.tilesets[tile]
-                        (topLeft, topRight, bottomLeft, bottomRight) = layer.cached[r,c]
+                    if (tileset != this.empty):
+                        (topLeft, topRight, bottomLeft, bottomRight) = this._cached[r,c,h]
 
                         surf.blit(tileset[topLeft], (x, y))
                         surf.blit(tileset[topRight], (x+this.tileWidth, y))
                         surf.blit(tileset[bottomLeft], (x, y+this.tileHeight))
                         surf.blit(tileset[bottomRight], (x+this.tileWidth, y+this.tileHeight))
-
-                        #pygame.draw.rect(surf, (150,0,0), (x,y,tileset.tileWidth,tileset.tileHeight),1)
-                        #pygame.draw.rect(surf, (255,0,0), (x,y,2*tileset.tileWidth,2*tileset.tileHeight),1)
                     x += 2*this.tileWidth
                 y += 2*this.tileHeight
 
-    def add_layer(this, layer):
-        layer.level = this
-        this.layers.append(layer)
+    def update_cache_single(this, pos):
+        # Update the tile cache for a cell and it's neighbours
+        for r in (-1, 0, 1):
+            for c in (-1, 0, 1):
+                p = (pos[0]+r, pos[1]+c, pos[2])
+                tileset = this[p]
+                if (tileset):
+                    #tileset = this.tilesets[tile]
+                    this._cached[p] = tileset.get_layout(this, p)
+                else:
+                    try:
+                        del this._cached[p]
+                    except KeyError:
+                        pass
+                if (this.updates != None):
+                    # Track the update
+                    this.updates.append(p)
 
-    def check_solid(this, row, col):
-        for layer in this.layers:
-            tile = layer[row,col]
-            if (tile):
-                tileset = this.tilesets[tile]
-                if (tileset.solid): return True
-        return False
+    def update_cache(this):
+        # Updating the entire map
+        this._cached = {}
+        for pos in this._tiles.keys():
+            tileset = this[pos]
+            if (tileset):
+                this._cached[pos] = tileset.get_layout(this, pos)
+
+#    def add_layer(this, layer):
+#        layer.level = this
+#        this.layers.append(layer)
+
+#    def check_solid(this, row, col):
+#        for layer in this.layers:
+#            tile = layer[row,col]
+#            if (tile):
+#                tileset = this.tilesets[tile]
+#                if (tileset.solid): return True
+#        return False
 
 class Camera(object):
     # Area covered by the camera within the map as a pygame Rect
@@ -302,6 +354,8 @@ class Camera(object):
     def level(this, l):
         this._level = l
         this.lastPos = None
+        # Have the level track updates to the terrain
+        this._level.updates = []
 
     @property
     def pos(this):
@@ -367,6 +421,16 @@ class Camera(object):
         else:
             (r1, r2, c1, c2) = this.gridPos
             this.level.render(this.surf, (-this.gridOffset[0], -this.gridOffset[1]), r1, r2, c1, c2)
+
+        # Now do the manual updates
+        for pos in this.level.updates:
+            (r1, r2, c1, c2) = this.gridPos
+            (r, c, h) = pos
+            dest = (-this.gridOffset[0]+(c-c1)*2*this.level.tileWidth, -this.gridOffset[1]+(r-r1)*2*this.level.tileHeight)
+            this.level.render(this.surf, dest, r, r+1, c, c+1)
+
+        # Clear the updates
+        this.level.updates = []
 
         this.lastPos = this.pos
 
