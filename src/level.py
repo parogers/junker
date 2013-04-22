@@ -259,7 +259,7 @@ class Level(object):
                 for c in range(c1, c2+1):
                     #tile = layer[r,c]
                     tileset = this[r,c,h]
-                    if (this.bg):
+                    if (this.bg and h == 0):
                         bg = this.tilesets[this.bg]["base2"]
                         surf.blit(bg, (x, y))
 
@@ -431,6 +431,5 @@ class Camera(object):
 
         # Clear the updates
         this.level.updates = []
-
         this.lastPos = this.pos
 

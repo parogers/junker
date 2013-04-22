@@ -21,6 +21,10 @@ class Animation(object):
         this.numFrames = numFrames
 
     @property
+    def size(this):
+        return (this.width, this.height)
+
+    @property
     def width(this):
         return int(this.img.get_width()/this.numFrames)
 
@@ -97,8 +101,9 @@ class Shot(Base):
                 smoke = Explosion(this.world, this.pos)
                 this.world.explosions.add(smoke)
                 this.kill()
-                del this.level[r,c,0]
-                this.level.update_cache_single((r, c, 0))
+                h = 0
+                this.level[r,c,h] = "burnt"
+                this.level.update_cache_single((r, c, h))
         else:
             # Check for a collision with the player
             if (this.world.player.colliderect(hit.rect)):
@@ -145,6 +150,7 @@ class Tank(Base):
     turret = None
     # The angle of rotation of the tank
     angle = 0
+    collisionSize = None
     smokes = None
     maxSmokes = 15
     nextSmoke = 0
@@ -157,6 +163,7 @@ class Tank(Base):
         this.rect = this.anim[0].get_rect()
         this.turret = TankTurret(this)
         this.smokes = pygame.sprite.Group()
+        this.collisionSize = (this.anim.width/2, this.anim.height/2)
         this.frame = 0
 
     # Have the turret at the given position
@@ -192,8 +199,16 @@ class Tank(Base):
         if (abs(this.vel) > 0):
             for newpos in (this.pos + this.vel*dt, this.pos + velx, this.pos + vely):
                 # Check if the new position is blocked by the terrain
-                (r, c, off) = this.level.map_to_grid(newpos.toint())
-                if (not this.level[r,c,0].solid):
+                col = pygame.Rect((0,0), this.collisionSize)
+                col.center = newpos.toint()
+                (r1, r2, c1, c2, off) = this.level.map_to_grid(col)
+                hit = False
+                for r in range(r1, r2+1):
+                    for c in range(c1, c2+1):
+                        if (this.level[r,c,0].solid):
+                            hit = True
+
+                if (not hit):
                     this.pos = newpos
                     this.frame -= 10*dt
                     break

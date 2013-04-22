@@ -81,6 +81,7 @@ class World(object):
             ("dirt", "dirt.png", False, 0),
             ("stone", "stone.png", True, 1),
             ("tree", "tree.png", True, 1),
+            ("burnt", "burnt.png", False, 0),
             ):
             terr = Tileset(name, Loader.loader.get(os.path.join("terrains", fname)))
             terr.solid = solid
@@ -142,7 +143,7 @@ class World(object):
             this.player.controlLeft = keys[pygame.K_LEFT] or keys[pygame.K_a]
             this.player.controlRight = keys[pygame.K_RIGHT] or keys[pygame.K_d]
             this.player.controlFire = keys[pygame.K_SPACE] or sum(pygame.mouse.get_pressed()) > 0
-            # Always have the ship point towards the mouse cursor
+            # Always have the turret point at the mouse cursor
             this.player.point_to(pygame.mouse.get_pos())
 
             dt = clock.tick(fps)/1000.0
