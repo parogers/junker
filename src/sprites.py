@@ -5,38 +5,11 @@ import os
 import pygame
 import random
 import numpy
+import time
 
 from loader import Loader
 from vector import vector
-
-class Animation(object):
-    img = None
-    fps = 0
-    numFrames = 0
-    loopTo = 0
-    origin = (0, 0)
-
-    def __init__(this, img, numFrames):
-        this.img = img
-        this.numFrames = numFrames
-
-    @property
-    def size(this):
-        return (this.width, this.height)
-
-    @property
-    def width(this):
-        return int(this.img.get_width()/this.numFrames)
-
-    @property
-    def height(this):
-        return this.img.get_height()
-
-    def __getitem__(this, fnum):
-        fnum = int(fnum)
-        if (fnum < 0 or fnum >= this.numFrames):
-            fnum = (fnum-this.loopTo) % (this.numFrames-this.loopTo) + this.loopTo
-        return this.img.subsurface(fnum*this.width, 0, this.width, this.height)
+from anim import Animation
 
 class Base(pygame.sprite.Sprite):
     def __init__(this, world):
@@ -45,6 +18,7 @@ class Base(pygame.sprite.Sprite):
         this.vel = vector()
         this.accel = vector()
         this.world = world
+        this.rect = pygame.Rect(0,0,0,0)
 
     @property
     def level(this):
@@ -54,9 +28,30 @@ class Base(pygame.sprite.Sprite):
         pass
 
     def update_rect(this, camera):
+        if (this.image):
+            this.rect.size = this.image.get_size()
         this.rect.center = (
             int(this.pos[0]) - camera.topleft[0],
             int(this.pos[1]) - camera.topleft[1])
+
+class Fire(Base):
+    def __init__(this, world):
+        super(Fire, this).__init__(world)
+        this.anim = Loader.loader.load_animation("fire.png", 2)
+        this.frame = 0
+        this.fps = 10
+        this.nextSmoke = 0
+
+    def update(this, dt):
+        this.frame += this.fps*dt
+        this.image = this.anim[this.frame]
+
+        if (time.time() > this.nextSmoke):
+            # Create some smoke and add it to the smoke layer (above explosions)
+            smoke = Smoke(this.world, this.pos + vector(0, this.image.get_height()/3), size=40)
+            smoke.vel = vector(0, -random.uniform(20, 50))
+            this.world.smokeGroup.add(smoke)
+            this.nextSmoke = time.time() + random.uniform(0.5, 0.7)
 
 class Shot(Base):
     def __init__(this, owner, img):
@@ -102,8 +97,18 @@ class Shot(Base):
                 this.world.explosions.add(smoke)
                 this.kill()
                 h = 0
-                this.level[r,c,h] = "burnt"
+                del this.level[r,c,h]
                 this.level.update_cache_single((r, c, h))
+                this.level.fill_area(r-1, r+1, c-1, c+1, -1, "burnt2")
+
+                for n in range(random.randint(1, 3)):
+                    fire = Fire(this.world)
+                    fire.pos = this.pos + random.uniform(0,16)*vector.from_angle(random.uniform(0,360))
+                    fire.frame = random.uniform(0,10)
+                    fire.fps = random.uniform(5,12)
+                    this.world.explosions.add(fire)
+                # Play the explosion sound
+                this.world.explodeSnd.play()
         else:
             # Check for a collision with the player
             if (this.world.player.colliderect(hit.rect)):
@@ -116,7 +121,7 @@ class TankTurret(Base):
 
     def __init__(this, tankBase):
         super(TankTurret, this).__init__(tankBase.world)
-        this.origImage = Loader.loader.get("tank/turret.png")
+        this.origImage = Loader.loader.load_image("tank/turret.png")
         this.image = this.origImage
         this.rect = this.origImage.get_rect()
         this.tankBase = tankBase
@@ -154,12 +159,14 @@ class Tank(Base):
     smokes = None
     maxSmokes = 15
     nextSmoke = 0
+    motorSndCh = None
+    motorIdleSndCh = None
     smoking = False
 
     def __init__(this, world):
         super(Tank, this).__init__(world)
-        this.anim = Animation(Loader.loader.get("tank/base.png"), 4)
-        this.shotImage = Loader.loader.get("playershot.png")
+        this.anim = Animation(Loader.loader.load_image("tank/base.png"), 4)
+        this.shotImage = Loader.loader.load_image("playershot.png")
         this.rect = this.anim[0].get_rect()
         this.turret = TankTurret(this)
         this.smokes = pygame.sprite.Group()
@@ -197,6 +204,13 @@ class Tank(Base):
 
         # Update the position (centre of the square)
         if (abs(this.vel) > 0):
+            # Play the motor sound
+            if (not this.motorSndCh):
+                this.motorSndCh = this.world.motorSnd.play(-1)
+            if (this.motorIdleSndCh):
+                this.motorIdleSndCh.stop()
+                this.motorIdleSndCh = None
+
             for newpos in (this.pos + this.vel*dt, this.pos + velx, this.pos + vely):
                 # Check if the new position is blocked by the terrain
                 col = pygame.Rect((0,0), this.collisionSize)
@@ -212,6 +226,12 @@ class Tank(Base):
                     this.pos = newpos
                     this.frame -= 10*dt
                     break
+        else:
+            if (this.motorSndCh):
+                this.motorSndCh.stop()
+                this.motorSndCh = None
+            if (not this.motorIdleSndCh):
+                this.motorIdleSndCh = this.world.motorIdleSnd.play(-1)
 
         this.rect.size = this.image.get_size()
         this.rect.center = (int(this.pos.x), int(this.pos.y))
@@ -238,6 +258,8 @@ class Tank(Base):
 
         if (this.controlFire):
             if (this.shootDelay == 0):
+                # Play a shooting sound
+                this.world.shotSnd.play()
                 # Ready to shoot again
                 shot = Shot(this, this.shotImage)
                 shot.world = this.world
@@ -256,7 +278,7 @@ class Enemy(Base):
 
     def __init__(this, world):
         super(Enemy, this).__init__(world)
-        this.anim = Animation(Loader.loader.get("pod.png"), 6)
+        this.anim = Animation(Loader.loader.load_image("pod.png"), 6)
         this.vel = vector.from_angle(random.randint(0,360)) * random.uniform(50, 150)
         this.image = this.anim[0]
         this.rect = this.image.get_rect()
@@ -291,20 +313,24 @@ class Enemy(Base):
         smoke.vel = this.vel
         this.world.explosions.add(smoke)
 
+        # Play the explosion sound
+        this.world.explodeSnd.play()
+
         this.kill()
 
 class Smoke(Base):
     frames = None
 
-    def __init__(this, world, pos=None):
+    def __init__(this, world, pos=None, size=50):
         super(Smoke, this).__init__(world)
-        smokeImg = Loader.loader.get("smoke-mask.png")
+        smokeImg = Loader.loader.load_image("smoke-mask.png")
         if (not Smoke.frames):
             Smoke.frames = []
             nframes = 10
             for n in range(nframes):
                 value = (nframes-n)/float(nframes)
-                scale = (1.2/nframes)*(n+1)
+                #scale = (1.2/nframes)*(n+1)
+                scale = (1.0/smokeImg.get_width()) * size * (float(n+1)/nframes)
                 img = pygame.transform.rotozoom(smokeImg, 0, scale)
 
                 alpha = pygame.surfarray.pixels_alpha(img)
@@ -320,7 +346,7 @@ class Smoke(Base):
         if (pos): this.pos = pos
 
     def update(this, dt):
-        this.pos += this.vel*dt/4
+        this.pos += this.vel*dt
         this.frame += dt*this.fps
         if (this.frame >= len(this.frames)):
             this.kill()
@@ -334,7 +360,7 @@ class Explosion(Base):
 
     def __init__(this, world, pos=None):
         super(Explosion, this).__init__(world)
-        expImg = Loader.loader.get("explosion-mask.png")
+        expImg = Loader.loader.load_image("explosion-mask.png")
         if (not Explosion.frames):
             Explosion.frames = []
             nframes = 6

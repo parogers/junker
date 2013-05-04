@@ -3,6 +3,8 @@
 import os
 import pygame
 
+from anim import Animation
+
 class Loader(object):
     basedir = None
     cache = None
@@ -14,7 +16,7 @@ class Loader(object):
     def has(this, fname):
         return fname in this.cache
 
-    def get(this, fname):
+    def load_image(this, fname):
         try:
             return this.cache[fname]
         except:
@@ -22,3 +24,15 @@ class Loader(object):
             this.cache[fname] = img
             return img
 
+    def load_sound(this, fname, vol=1):
+        try:
+            return this.cache[fname]
+        except:
+            snd = pygame.mixer.Sound(os.path.join(this.basedir, "sound", fname))
+            snd.set_volume(vol)
+            this.cache[fname] = snd
+            return snd
+
+    def load_animation(this, fname, nframes):
+        img = this.load_image(fname)
+        return Animation(img, nframes)

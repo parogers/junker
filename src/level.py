@@ -5,6 +5,8 @@ import pygame
 TILEW = 16
 TILEH = 16
 
+MIN_HEIGHT = -1
+
 class Tileset(object):
     # Sound effects
     # Dust effect
@@ -252,14 +254,14 @@ class Level(object):
 
     def render(this, surf, dest, r1, r2, c1, c2):
         #for layer in this.layers:
-        for h in range(this.maxHeight+1):
+        for h in range(MIN_HEIGHT, this.maxHeight+1):
             y = dest[1]
             for r in range(r1, r2+1):
                 x = dest[0]
                 for c in range(c1, c2+1):
                     #tile = layer[r,c]
                     tileset = this[r,c,h]
-                    if (this.bg and h == 0):
+                    if (this.bg and h == MIN_HEIGHT):
                         bg = this.tilesets[this.bg]["base2"]
                         surf.blit(bg, (x, y))
 
@@ -273,23 +275,40 @@ class Level(object):
                     x += 2*this.tileWidth
                 y += 2*this.tileHeight
 
+    # Fill an area of the map with the same tile
+    def fill_area(this, r1, r2, c1, c2, h, tile):
+        lst = []
+        for r in range(r1, r2+1):
+            for c in range(c1, c2+1):
+                this[r,c,h] = tile
+                lst.append((r, c, h))
+        this.update_cache_list(lst)
+
+    def update_cache_list(this, lst):
+        updates = set()
+        for (r, c, h) in lst:
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    updates.add((r+dr, c+dc, h))
+
+        for p in list(updates):
+            #p = (pos[0]+r, pos[1]+c, pos[2])
+            tileset = this[p]
+            if (tileset):
+                #tileset = this.tilesets[tile]
+                this._cached[p] = tileset.get_layout(this, p)
+            else:
+                try:
+                    del this._cached[p]
+                except KeyError:
+                    pass
+            if (this.updates != None):
+                # Track the update
+                this.updates.append(p)
+
     def update_cache_single(this, pos):
         # Update the tile cache for a cell and it's neighbours
-        for r in (-1, 0, 1):
-            for c in (-1, 0, 1):
-                p = (pos[0]+r, pos[1]+c, pos[2])
-                tileset = this[p]
-                if (tileset):
-                    #tileset = this.tilesets[tile]
-                    this._cached[p] = tileset.get_layout(this, p)
-                else:
-                    try:
-                        del this._cached[p]
-                    except KeyError:
-                        pass
-                if (this.updates != None):
-                    # Track the update
-                    this.updates.append(p)
+        this.update_cache_list((pos,))
 
     def update_cache(this):
         # Updating the entire map

@@ -32,6 +32,7 @@ MAIN_QUIT = 3
 # Init pygame
 pygame.display.init()
 pygame.font.init()
+pygame.mixer.init()
 
 display = pygame.display.set_mode((800,600))
 
@@ -142,8 +143,5 @@ def show_main_menu():
         elif (app.choice == MAIN_QUIT):
             break
 
-#show_main_menu()
-
 world = World()
 world.mainloop()
-

@@ -67,11 +67,25 @@ class World(object):
 
         Loader.loader = Loader(os.path.join("..", "media"))
 
+        # Load various sounds
+        this.snd = Loader.loader.load_sound("explode2.wav")
+        this.snd.play()
+
+        this.explodeSnd = Loader.loader.load_sound("explode2.wav", vol=0.2)
+        this.shotSnd = Loader.loader.load_sound("shot2.wav", vol=0.5)
+        this.motorSnd = Loader.loader.load_sound("motor-run.wav", vol=0.5)
+        this.motorIdleSnd = Loader.loader.load_sound("motor-idle.wav", vol=0.5)
+
         this.midground = pygame.sprite.RenderUpdates()
         this.foreground = pygame.sprite.RenderUpdates()
         this.explosions = pygame.sprite.RenderUpdates()
+        this.smokeGroup = pygame.sprite.RenderUpdates()
         this.enemies = pygame.sprite.Group()
         this.setup()
+
+    @property
+    def renderGroups(this):
+        return (this.midground, this.foreground, this.explosions, this.smokeGroup)
 
     def setup(this):
         # Load the terrains
@@ -82,8 +96,9 @@ class World(object):
             ("stone", "stone.png", True, 1),
             ("tree", "tree.png", True, 1),
             ("burnt", "burnt.png", False, 0),
+            ("burnt2", "burnt2.png", False, 0),
             ):
-            terr = Tileset(name, Loader.loader.get(os.path.join("terrains", fname)))
+            terr = Tileset(name, Loader.loader.load_image(os.path.join("terrains", fname)))
             terr.solid = solid
             terr.damage = dmg
             this.tilesets[terr.name] = terr
@@ -151,14 +166,16 @@ class World(object):
             #    print 1/dt
             lastTime = time.time()
 
-            this.midground.update(dt)
-            this.foreground.update(dt)
-            this.explosions.update(dt)
+            # Update the sprites in this level
+            for g in this.renderGroups:
+                g.update(dt)
 
+            # Center the camera
             cam.pos = this.player.pos
             cam.render()
 
-            for g in (this.midground, this.foreground, this.explosions):
+            # Position the sprites on the screen, based on where the camera is located
+            for g in this.renderGroups:
                 for sp in g:
                     sp.update_rect(cam)
 
@@ -168,12 +185,6 @@ class World(object):
             lst = this.midground.draw(this.disp)
             lst += this.foreground.draw(this.disp)
             lst += this.explosions.draw(this.disp)
+            lst += this.smokeGroup.draw(this.disp)
             # Update display
-            #pygame.transform.scale(this.disp, this.display.get_size(), this.display)
             pygame.display.flip()
-            #pygame.display.update(lst)
-            # Clear the sprites
-            #this.midground.clear(this.disp, bg)
-            #this.foreground.clear(this.disp, bg)
-            #this.explosions.clear(this.disp, bg)
-
