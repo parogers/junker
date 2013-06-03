@@ -1,5 +1,6 @@
 # level.py
 
+import sys
 import pygame
 
 TILEW = 16
@@ -143,50 +144,23 @@ class Tileset(object):
     def connects_to(this, tileset):
         return (this == tileset)
 
-## A layer of tiles within a level
-#class Layer(object):
-#    tiles = None
-#    height = 0
-#    level = None
-#    cached = None
-#    bg = None
-
-#    def __init__(this):
-#        this.tiles = {}
-#        this.cached = {}
-
-#    def __getitem__(this, pos):
-#        return this.tiles.get(pos, None)
-
-#    def __setitem__(this, pos, tile):
-#        this.tiles[pos] = tile
-
-#    def __delitem__(this, pos):
-#        del this.tiles[pos]
-
-#    @property
-#    def rows(this):
-#        return this.level.rows
-
-#    @property
-#    def cols(this):
-#        return this.level.cols
-
 # A level consists of a set of layers with stuff on them (player, enemies, etc)
 class Level(object):
     layers = None
     world = None
     bg = None
+    rows = 0
+    cols = 0
     _tiles = None
     _cached = None
     # If not None, the level instance will track a list of changes made to the map. This is 
     # used by the Camera so it knows what cells have to be redrawn.
     updates = None
 
-    def __init__(this, world, rows, cols):
+    def __init__(this, world=None):
         this.world = world
-        this.rows = rows
-        this.cols = cols
+        #this.rows = rows
+        #this.cols = cols
         #this.layers = []
         this.templates = {}
         this.tileWidth = TILEW
@@ -199,6 +173,10 @@ class Level(object):
     # Returns the terrain at the given position (r, c, h)
     def __getitem__(this, pos):
         (r, c, h) = pos
+        if (type(r) == slice or type(c) == slice or type(h) == slice):
+            # Return an iterator
+            pass
+
         try:
             tile = this._tiles[pos]
         except KeyError:
@@ -224,6 +202,22 @@ class Level(object):
     @property
     def tilesets(this):
         return this.world.tilesets
+
+    def calculate_map_area(this):
+        r1 = sys.maxint
+        r2 = -sys.maxint
+        c1 = sys.maxint
+        c2 = -sys.maxint
+        for (r, c, h) in this._tiles:
+            r1 = min(r1, r)
+            r2 = max(r2, r)
+            c1 = min(c1, c)
+            c2 = max(c2, c)
+        return (r1, r2, c1, c2)
+
+    # Converts grid (row, col) to map position (pixels)
+    def grid_to_map(this, row, col):
+        return (col*TILEW*2 + TILEW, row*TILEH*2 + TILEH)
 
     # Converts from map (pixel) to grid position
     def map_to_grid(this, rect):
@@ -292,10 +286,8 @@ class Level(object):
                     updates.add((r+dr, c+dc, h))
 
         for p in list(updates):
-            #p = (pos[0]+r, pos[1]+c, pos[2])
             tileset = this[p]
             if (tileset):
-                #tileset = this.tilesets[tile]
                 this._cached[p] = tileset.get_layout(this, p)
             else:
                 try:
@@ -317,18 +309,6 @@ class Level(object):
             tileset = this[pos]
             if (tileset):
                 this._cached[pos] = tileset.get_layout(this, pos)
-
-#    def add_layer(this, layer):
-#        layer.level = this
-#        this.layers.append(layer)
-
-#    def check_solid(this, row, col):
-#        for layer in this.layers:
-#            tile = layer[row,col]
-#            if (tile):
-#                tileset = this.tilesets[tile]
-#                if (tileset.solid): return True
-#        return False
 
 class Camera(object):
     # Area covered by the camera within the map as a pygame Rect
@@ -445,7 +425,8 @@ class Camera(object):
         for pos in this.level.updates:
             (r1, r2, c1, c2) = this.gridPos
             (r, c, h) = pos
-            dest = (-this.gridOffset[0]+(c-c1)*2*this.level.tileWidth, -this.gridOffset[1]+(r-r1)*2*this.level.tileHeight)
+            dest = (-this.gridOffset[0] + (c-c1)*2*this.level.tileWidth, 
+                    -this.gridOffset[1] + (r-r1)*2*this.level.tileHeight)
             this.level.render(this.surf, dest, r, r+1, c, c+1)
 
         # Clear the updates

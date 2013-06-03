@@ -4,6 +4,7 @@ import os
 import pygame
 
 from anim import Animation
+from level import Level
 
 class Loader(object):
     basedir = None
@@ -36,3 +37,24 @@ class Loader(object):
     def load_animation(this, fname, nframes):
         img = this.load_image(fname)
         return Animation(img, nframes)
+
+    def load_level(this, fname, tileMapping):
+        (base, ext) = os.path.splitext(fname)
+        height = 0
+        lvl = Level()
+        while 1:
+            path = "%s-%d%s" % (base, height, ext)
+            try:
+                img = this.load_image(os.path.join("levels", path)).convert_alpha()
+            except pygame.error:
+                break
+
+            for x in range(img.get_width()):
+                for y in range(img.get_height()):
+                    (r, g, b, a) = img.get_at((x, y))
+                    if (a == 255):
+                        terrain = tileMapping[r,g,b]
+                        if (terrain):
+                            lvl[y,x,height] = terrain
+            height += 1
+        return lvl

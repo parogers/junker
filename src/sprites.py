@@ -219,8 +219,9 @@ class Tank(Base):
                 hit = False
                 for r in range(r1, r2+1):
                     for c in range(c1, c2+1):
-                        if (this.level[r,c,0].solid):
-                            hit = True
+                        for h in range(0, this.level.maxHeight+1):
+                            if (this.level[r,c,h].solid):
+                                hit = True
 
                 if (not hit):
                     this.pos = newpos

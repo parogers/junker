@@ -21,30 +21,31 @@ def gen_circle(level, centre, size, value, var=0):
                 level[r,c,0] = value
 
 def generate_level(world, size):
-    lvl = Level(world, *size)
+    lvl = Level(world)
+    (rows, cols) = size
     lvl.bg = "dirt"
 
-    for r in range(lvl.rows):
-        for c in range(lvl.cols):
+    for r in range(rows):
+        for c in range(cols):
             lvl[r,c,0] = "grass"
 
     for n in range(20):
-        r = randint(0, lvl.rows-1)
-        c = randint(0, lvl.cols-1)
+        r = randint(0, rows-1)
+        c = randint(0, cols-1)
         gen_circle(lvl, (r, c), (3, 3), "water", 2)
 
     for n in range(10):
-        r = randint(0, lvl.rows-1)
-        c = randint(0, lvl.cols-1)
+        r = randint(0, rows-1)
+        c = randint(0, cols-1)
         gen_circle(lvl, (r, c), (3, 3), "tree", 2)
 
-    for r in range(lvl.rows):
+    for r in range(rows):
         lvl[r,0,0] = "stone"
         if (random.random() < 0.8):
             lvl[r,1,0] = "stone"
-        lvl[r,lvl.cols-1,0] = "stone"
+        lvl[r,cols-1,0] = "stone"
         if (random.random() < 0.8):
-            lvl[r,lvl.cols-2,0] = "stone"
+            lvl[r,cols-2,0] = "stone"
 
     return lvl
 
@@ -97,6 +98,7 @@ class World(object):
             ("tree", "tree.png", True, 1),
             ("burnt", "burnt.png", False, 0),
             ("burnt2", "burnt2.png", False, 0),
+            ("wall", "wall.png", True, 0),
             ):
             terr = Tileset(name, Loader.loader.load_image(os.path.join("terrains", fname)))
             terr.solid = solid
@@ -122,7 +124,23 @@ class World(object):
         rows = 100
         cols = 20
 
-        this.level = generate_level(this, (rows, cols))
+        #this.level = generate_level(this, (rows, cols))
+
+        tileMapping = {
+            (0,0,0) : None,
+            (0,255,0) : "grass",
+            (0,0,255) : "water",
+            (128,128,128) : "road",
+            (255,255,0) : "dirt",
+            (0,128,0) : "tree",
+            (128,128,128) : "stone",
+            (80,80,80) : "wall",
+        }
+
+        this.level = Loader.loader.load_level("testlevel.png", tileMapping)
+        this.level.world = this
+        #this.level = generate_level(this, (rows, cols))
+
         this.level.update_cache()
 
         cam = Camera()
@@ -142,9 +160,14 @@ class World(object):
         bg = cam.surf
 
         this.disp = this.display
-        this.disp.blit(bg, (0,0))
-        pygame.display.flip()
+        #this.disp.blit(bg, (0,0))
+        #pygame.display.flip()
         lastTime = 0
+
+        (r1, r2, c1, c2) = this.level.calculate_map_area()
+        (xpos, ypos) = this.level.grid_to_map(r2-13, (c2-c1)/2)
+
+        this.player.pos = vector(xpos, ypos)
 
         while not done:
             # Handle events
@@ -171,7 +194,8 @@ class World(object):
                 g.update(dt)
 
             # Center the camera
-            cam.pos = this.player.pos
+            #cam.pos = this.player.pos
+            cam.pos = (xpos, this.player.pos.y)
             cam.render()
 
             # Position the sprites on the screen, based on where the camera is located
@@ -181,7 +205,7 @@ class World(object):
 
             this.display.blit(cam.surf, (0, 0))
 
-            # Render the enemies first so the player's square always appears on top
+            # Render the enemies first so the player always appears on top
             lst = this.midground.draw(this.disp)
             lst += this.foreground.draw(this.disp)
             lst += this.explosions.draw(this.disp)
