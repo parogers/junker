@@ -9,47 +9,8 @@ from loader import Loader
 from random import randint
 
 from vector import vector
-from sprites import Tank, Enemy, Shot
+from sprites import Tank, Enemy, GunTurretBase
 from level import Tileset, Level, Camera
-
-def gen_circle(level, centre, size, value, var=0):
-    (centR, centC) = centre
-    (w, h) = size
-    for r in range(centR-h, centR+h+1):
-        for c in range(centC-h, centC+h+1):
-            if ((r-centR)**2 + (c-centC)**2 <= w*h+1+random.randint(0,var)):
-                level[r,c,0] = value
-
-def generate_level(world, size):
-    lvl = Level(world)
-    (rows, cols) = size
-    lvl.bg = "dirt"
-
-    for r in range(rows):
-        for c in range(cols):
-            lvl[r,c,0] = "grass"
-
-    for n in range(20):
-        r = randint(0, rows-1)
-        c = randint(0, cols-1)
-        gen_circle(lvl, (r, c), (3, 3), "water", 2)
-
-    for n in range(10):
-        r = randint(0, rows-1)
-        c = randint(0, cols-1)
-        gen_circle(lvl, (r, c), (3, 3), "tree", 2)
-
-    for r in range(rows):
-        lvl[r,0,0] = "stone"
-        if (random.random() < 0.8):
-            lvl[r,1,0] = "stone"
-        lvl[r,cols-1,0] = "stone"
-        if (random.random() < 0.8):
-            lvl[r,cols-2,0] = "stone"
-
-    return lvl
-
-###
 
 class World(object):
     size = None
@@ -62,16 +23,12 @@ class World(object):
     def __init__(this):
         # Create a display
         this.display = pygame.display.set_mode((800, 600))
-        #this.disp = pygame.Surface((800,600)).convert()
-        this.disp = this.display
+        pygame.display.set_caption("JUNKER")
         this.tilesets = {}
 
         Loader.loader = Loader(os.path.join("..", "media"))
 
         # Load various sounds
-        this.snd = Loader.loader.load_sound("explode2.wav")
-        this.snd.play()
-
         this.explodeSnd = Loader.loader.load_sound("explode2.wav", vol=0.2)
         this.shotSnd = Loader.loader.load_sound("shot2.wav", vol=0.5)
         this.motorSnd = Loader.loader.load_sound("motor-run.wav", vol=0.5)
@@ -90,27 +47,36 @@ class World(object):
 
     def setup(this):
         # Load the terrains
-        for (name, fname, solid, dmg) in (
-            ("grass", "grass.png", False, 0),
-            ("water", "water.png", False, 0),
-            ("dirt", "dirt.png", False, 0),
-            ("stone", "stone.png", True, 1),
-            ("tree", "tree.png", True, 1),
-            ("burnt", "burnt.png", False, 0),
-            ("burnt2", "burnt2.png", False, 0),
-            ("wall", "wall.png", True, 0),
+        for (name, fname, solid, destructable) in (
+            ("grass",  "grass.png",   False, False),
+            ("water",  "water.png",   False, False),
+            ("sea",    "water.png",   False, False),
+            ("dirt",   "dirt.png",    False, False),
+            ("stone",  "stone.png",   True,  False),
+            ("tree",   "tree.png",    True,  True),
+            ("burnt",  "burnt.png",   False, False),
+            ("burnt2", "burnt2.png",  False, False),
+            ("wall",   "wall.png",    True,  False),
             ):
-            terr = Tileset(name, Loader.loader.load_image(os.path.join("terrains", fname)))
+            terr = Tileset(name, Loader.loader.load_image(
+                    os.path.join("terrains", fname)))
             terr.solid = solid
-            terr.damage = dmg
+            terr.destructable = destructable
             this.tilesets[terr.name] = terr
 
+        this.tilesets["sea"].add_connection(this.tilesets["water"])
+
         this.player = Tank(this)
-        this.player.pos = vector(400, 100)
+        this.player.pos = vector(0, 0)
         this.player.velAngle = 50
-        this.player.world = this
+        #this.player.world = this
         this.midground.add(this.player)
         this.foreground.add(this.player.turret)
+
+        gun = GunTurretBase(this)
+        gun.pos = vector(430, 3600)
+        this.midground.add(gun)
+        this.foreground.add(gun.turret)
 
         for n in range(50):
             e = Enemy(this)
@@ -130,6 +96,7 @@ class World(object):
             (0,0,0) : None,
             (0,255,0) : "grass",
             (0,0,255) : "water",
+            (0,0,200) : "sea",
             (128,128,128) : "road",
             (255,255,0) : "dirt",
             (0,128,0) : "tree",
@@ -150,11 +117,11 @@ class World(object):
         done = False
         clock = pygame.time.Clock()
 
-        this.area = this.disp.get_rect().inflate(-10,-10)
+        this.area = this.display.get_rect().inflate(-10,-10)
 
         cam.level = this.level
-        cam.size = this.disp.get_size()
-        cam.pos = (this.disp.get_width()/2, this.disp.get_height()/2)
+        cam.size = this.display.get_size()
+        cam.pos = (this.display.get_width()/2, this.display.get_height()/2)
         cam.render()
 
         bg = cam.surf

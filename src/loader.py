@@ -21,7 +21,8 @@ class Loader(object):
         try:
             return this.cache[fname]
         except:
-            img = pygame.image.load(os.path.join(this.basedir, fname)).convert_alpha()
+            img = pygame.image.load(
+                os.path.join(this.basedir, fname)).convert_alpha()
             this.cache[fname] = img
             return img
 
@@ -34,8 +35,10 @@ class Loader(object):
             this.cache[fname] = snd
             return snd
 
-    def load_animation(this, fname, nframes):
+    def load_animation(this, fname, nframes, scale=1):
         img = this.load_image(fname)
+        if (scale != 1):
+            img = pygame.transform.rotozoom(img, 0, scale)
         return Animation(img, nframes)
 
     def load_level(this, fname, tileMapping):
@@ -45,7 +48,8 @@ class Loader(object):
         while 1:
             path = "%s-%d%s" % (base, height, ext)
             try:
-                img = this.load_image(os.path.join("levels", path)).convert_alpha()
+                img = this.load_image(
+                    os.path.join("levels", path)).convert_alpha()
             except pygame.error:
                 break
 

@@ -143,19 +143,5 @@ def show_main_menu():
         elif (app.choice == MAIN_QUIT):
             break
 
-def gen(a,b):
-    for i in range(b):
-        yield i
-
-class A:
-    def __getitem__(this, n):
-        if (type(n) == slice):
-            return gen(0,10)
-        return n
-
-a = A()
-for n in a[0:10]:
-    print n
-
-#world = World()
-#world.mainloop()
+world = World()
+world.mainloop()

@@ -17,12 +17,15 @@ class Tileset(object):
     size = None
     tiles = None
     solid = False
+    destructable = False
     # How much damage the tile can sustain before breaking (0=indestructable)
     damage = 0
+    connections = None
 
     def __init__(this, name, img):
         this.name = name
         this.tiles = {}
+        this.connections = [this]
         if (img):
             (w, h) = img.get_size()
             cols = 5
@@ -141,8 +144,13 @@ class Tileset(object):
 
         return (topLeft, topRight, bottomLeft, bottomRight)
 
+    def add_connection(this, other):
+        if (not other in this.connections):
+            this.connections.append(other)
+            other.connections.append(this)
+
     def connects_to(this, tileset):
-        return (this == tileset)
+        return (tileset in this.connections)
 
 # A level consists of a set of layers with stuff on them (player, enemies, etc)
 class Level(object):
@@ -260,12 +268,14 @@ class Level(object):
                         surf.blit(bg, (x, y))
 
                     if (tileset != this.empty):
-                        (topLeft, topRight, bottomLeft, bottomRight) = this._cached[r,c,h]
+                        (topLeft, topRight, 
+                         bottomLeft, bottomRight) = this._cached[r,c,h]
 
                         surf.blit(tileset[topLeft], (x, y))
                         surf.blit(tileset[topRight], (x+this.tileWidth, y))
                         surf.blit(tileset[bottomLeft], (x, y+this.tileHeight))
-                        surf.blit(tileset[bottomRight], (x+this.tileWidth, y+this.tileHeight))
+                        surf.blit(tileset[bottomRight], 
+                                  (x+this.tileWidth, y+this.tileHeight))
                     x += 2*this.tileWidth
                 y += 2*this.tileHeight
 
