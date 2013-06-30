@@ -1,5 +1,10 @@
 # effects.py
 
+import pygame
+import random
+import time
+import numpy
+
 from base import Base
 from vector import vector
 from loader import Loader

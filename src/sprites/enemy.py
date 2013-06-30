@@ -13,7 +13,9 @@ class Enemy(Base):
     def __init__(this, world):
         super(Enemy, this).__init__(world)
         this.anim = Animation(Loader.loader.load_image("pod.png"), 6)
-        this.vel = vector.from_angle(random.randint(0,360)) * random.uniform(50, 150)
+        this.vel = (
+            vector.from_angle(random.randint(0,360)) * 
+            random.uniform(50, 150))
         this.image = this.anim[0]
         this.rect = this.image.get_rect()
         this.fps = 12

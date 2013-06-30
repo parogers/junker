@@ -7,6 +7,7 @@ from base import Base
 from vector import vector
 from loader import Loader
 from anim import Animation
+from effects import Shot
 
 class TankTurret(Base):
     origImage = None

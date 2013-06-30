@@ -6,6 +6,7 @@ import math
 import random
 import site
 import os
+import time
 
 site.addsitedir(os.path.join("..", "..", "pgu"))
 
@@ -143,5 +144,6 @@ def show_main_menu():
         elif (app.choice == MAIN_QUIT):
             break
 
+time.sleep(0.5)
 world = World()
 world.mainloop()
