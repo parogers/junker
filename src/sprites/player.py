@@ -15,14 +15,12 @@ class TankTurret(Base):
 
     def __init__(this, tankBase):
         super(TankTurret, this).__init__(tankBase.world)
-        this.origImage = Loader.loader.load_image("tank/turret.png")
-        this.image = this.origImage
-        this.rect = this.origImage.get_rect()
+        this.anim = Loader.loader.load_animation("tank/turret.png", 1)
         this.tankBase = tankBase
 
-    def update_image(this):
-        this.image = pygame.transform.rotozoom(this.origImage, -this.angle, 1)
-        this.rect.size = this.image.get_size()
+#    def update_image(this):
+#        this.image = pygame.transform.rotozoom(this.origImage, -this.angle, 1)
+#        this.rect.size = this.image.get_size()
 
     # Returns the position of the barrel tip
     @property
@@ -67,17 +65,6 @@ class Tank(Base):
         this.collisionSize = (this.anim.width/2, this.anim.height/2)
         this.frame = 0
 
-    # Have the turret at the given position
-    def point_to(this, pos):
-        this.turret.angle = math.degrees(
-            math.atan2(pos[1]-this.rect.center[1], 
-                       pos[0]-this.rect.center[0]))
-
-    # Returns a unit vector pointing in the forward direction for this tank
-    @property
-    def forward(this):
-        return vector.from_angle(this.angle)
-
     def update(this, dt):
         velx = vector(0,0)
         vely = vector(0,0)
@@ -94,10 +81,10 @@ class Tank(Base):
 
         this.vel = vel.unit()*this.maxSpeed
         if (abs(this.vel) > 0):
-            this.angle = -this.vel.angle
+            this.angle = this.vel.angle
 
-        this.image = pygame.transform.rotozoom(this.anim[this.frame], 
-                                               this.angle, 1)
+        #this.image = pygame.transform.rotozoom(this.anim[this.frame], 
+        #                                       this.angle, 1)
 
         # Update the position (centre of the square)
         if (abs(this.vel) > 0):
@@ -133,9 +120,9 @@ class Tank(Base):
             if (not this.motorIdleSndCh):
                 this.motorIdleSndCh = this.world.motorIdleSnd.play(-1)
 
-        this.rect.size = this.image.get_size()
+        this.rect.size = this.anim.size
         this.rect.center = (int(this.pos.x), int(this.pos.y))
-        this.turret.update_image()
+        #this.turret.update_image()
 
         if (this.smoking and 
             this.nextSmoke <= 0 and 

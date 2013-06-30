@@ -376,6 +376,10 @@ class Camera(object):
         this._rect.center = (int(p[0]), int(p[1]))
         this.update_grid_pos()
 
+    # Converts from camera coordinates (aka screen) to map coordinates
+    def camera_to_map(this, pos):
+        return (this._rect.x + pos[0], this._rect.y + pos[1])
+
     def update_grid_pos(this):
         if (not this.level):
             raise ValueError("camera does not have a level")

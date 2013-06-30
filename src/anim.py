@@ -28,5 +28,5 @@ class Animation(object):
     def __getitem__(this, fnum):
         fnum = int(fnum)
         if (fnum < 0 or fnum >= this.numFrames):
-            fnum = (fnum-this.loopTo) % (this.numFrames-this.loopTo) + this.loopTo
+            fnum = (fnum-this.loopTo) % (this.numFrames-this.loopTo)+this.loopTo
         return this.img.subsurface(fnum*this.width, 0, this.width, this.height)

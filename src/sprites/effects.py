@@ -5,6 +5,7 @@ import random
 import time
 import numpy
 
+from anim import Animation
 from base import Base
 from vector import vector
 from loader import Loader
@@ -21,7 +22,7 @@ class Fire(Base):
 
     def update(this, dt):
         this.frame += this.fps*dt
-        this.image = this.anim[this.frame]
+        #this.image = this.anim[this.frame]
         if (this.duration != None):
             this.duration -= dt
             if (this.duration <= 0):
@@ -33,7 +34,7 @@ class Fire(Base):
             # Create some smoke and add it to the smoke layer (above explosions)
             smoke = Smoke(
                 this.world, 
-                this.pos + vector(0, this.image.get_height()/3), 
+                this.pos + vector(0, this.anim.height/3), 
                 size=40)
             smoke.vel = vector(0, -random.uniform(20, 50))
             this.world.smokeGroup.add(smoke)
@@ -42,12 +43,12 @@ class Fire(Base):
 class Shot(Base):
     def __init__(this, owner, img):
         super(Shot, this).__init__(owner.world)
-        this.origImage = img
+        this.anim = Animation(img, 1)
         this.rotSpeed = 720
         this.angle = 0
         this.lifetime = 1
         this.vel = vector(0, 0)
-        this.rect = this.origImage.get_rect()
+        #this.rect = this.origImage.get_rect()
         this.owner = owner
         this.damage = 1
         this.lifetime = 1
@@ -55,10 +56,10 @@ class Shot(Base):
     def update(this, dt):
         # Have the projectile rotate as it moves
         this.angle += this.rotSpeed*dt
-        this.image = pygame.transform.rotozoom(
-            this.origImage, int(this.angle/90)*90, 1)
+        #this.image = pygame.transform.rotozoom(
+        #    this.origImage, int(this.angle/90)*90, 1)
         this.pos += this.vel*dt
-        this.rect.center = (int(this.pos.x), int(this.pos.y))
+        #this.rect.center = (int(this.pos.x), int(this.pos.y))
 #        if (this.rect.right > this.world.area.right or
 #            this.rect.left < this.world.area.left or
 #            this.rect.top < this.world.area.top or
@@ -70,6 +71,35 @@ class Shot(Base):
 
         this.lifetime -= dt
 
+        # Check for a collision with the terrain
+        (r, c, off) = this.level.map_to_grid(this.pos)
+        #if (this.level[r,c,0].solid):
+        for h in range(this.level.maxHeight+1):
+            if (not this.level[r,c,h].destructable and
+                not this.level[r,c,h].solid):
+                continue
+            smoke = Explosion(this.world, this.pos)
+            this.world.explosions.add(smoke)
+            this.kill()
+            if (not this.level[r,c,h].destructable):
+                break
+            # Replace the terrain with a burnt patch of ground
+            del this.level[r,c,h]
+            this.level.update_cache_single((r, c, h))
+            this.level.fill_area(r, r, c, c, h, "burnt2")
+
+            for n in range(random.randint(1, 3)):
+                fire = Fire(this.world, duration=random.uniform(2,8))
+                fire.pos = (this.pos + 
+                            random.uniform(3,8)*
+                            vector.from_angle(random.uniform(0,360)))
+                fire.frame = random.uniform(0,10)
+                fire.fps = random.uniform(5,10)
+                this.world.explosions.add(fire)
+            # Play the explosion sound
+            this.world.explodeSnd.play()
+            break
+
         # Check for collisions
         if (this.owner == this.world.player):
             # Owned by the player, check for an enemy collision
@@ -77,39 +107,11 @@ class Shot(Base):
             if (hit):
                 hit.take_damage(this.damage)
                 this.kill()
-            # Check for a collision with the terrain
-            (r, c, off) = this.level.map_to_grid(this.pos)
-            #if (this.level[r,c,0].solid):
-            for h in range(this.level.maxHeight+1):
-                if (not this.level[r,c,h].destructable and
-                    not this.level[r,c,h].solid):
-                    continue
-                smoke = Explosion(this.world, this.pos)
-                this.world.explosions.add(smoke)
-                this.kill()
-                if (not this.level[r,c,h].destructable):
-                    break
-                # Replace the terrain with a burnt patch of ground
-                del this.level[r,c,h]
-                this.level.update_cache_single((r, c, h))
-                this.level.fill_area(r, r, c, c, h, "burnt2")
-
-                for n in range(random.randint(1, 3)):
-                    fire = Fire(this.world, duration=random.uniform(2,8))
-                    fire.pos = (this.pos + 
-                                random.uniform(3,8)*
-                                vector.from_angle(random.uniform(0,360)))
-                    fire.frame = random.uniform(0,10)
-                    fire.fps = random.uniform(5,10)
-                    this.world.explosions.add(fire)
-                # Play the explosion sound
-                this.world.explodeSnd.play()
-                break
-        else:
-            # Check for a collision with the player
-            if (this.world.player.colliderect(hit.rect)):
-                this.world.player.take_damage(this.damage)
-                this.kill()
+        #else:
+        #    # Check for a collision with the player
+        #    if (this.world.player.colliderect(hit.rect)):
+        #        this.world.player.take_damage(this.damage)
+        #        this.kill()
 
 class Smoke(Base):
     frames = None

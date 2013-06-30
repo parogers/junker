@@ -3,6 +3,7 @@
 import random
 
 from base import Base
+from effects import Shot, Explosion, Smoke
 from vector import vector
 from loader import Loader
 from anim import Animation
@@ -26,7 +27,6 @@ class Enemy(Base):
         this.rect.center = (int(this.pos.x), int(this.pos.y))
         
         this.frame += dt*this.fps
-        this.image = this.anim[this.frame]
 
         # Check for collisions with the walls
         border = 15
@@ -51,27 +51,37 @@ class Enemy(Base):
 
         # Play the explosion sound
         this.world.explodeSnd.play()
-
         this.kill()
 
 class GunTurret(Base):
     def __init__(this, tankBase):
         super(GunTurret, this).__init__(tankBase.world)
-        this.origImage = Loader.loader.load_image("gun-turret/turret.png")
-        this.image = this.origImage
-        this.rect = this.origImage.get_rect()
+        this.anim = Loader.loader.load_animation("gun-turret/turret.png", 1)
         this.tankBase = tankBase
 
 class GunTurretBase(Base):
     def __init__(this, world):
         super(GunTurretBase, this).__init__(this)
+        this.shotImage = Loader.loader.load_image("playershot.png")
         this.world = world
-        this.anim = Animation(Loader.loader.load_image("gun-turret/base.png"),1)
+        this.anim = Loader.loader.load_animation("gun-turret/base.png", 1)
         this.turret = GunTurret(this)
-        this.image = this.anim[0]
-        this.rect = this.anim[0].get_rect()
+        this.shootDelay = 0
+        this.shootCooldown = 0.4
 
     def update(this, dt):
-        #this.rect.size = this.image.get_size()
-        #this.rect.center = (int(this.pos.x), int(this.pos.y))
         this.turret.pos = this.pos
+        if (abs(this.world.player.pos - this.pos) > this.world.maxTargetDist):
+            # Player is too far away
+            return
+
+        this.turret.point_to(this.world.player.pos)
+        if (this.shootDelay <= 0):
+            # Ready to shoot again
+            shot = Shot(this, this.shotImage)
+            shot.world = this.world
+            shot.pos = vector(*this.turret.pos)
+            shot.vel = vector.from_angle(this.turret.angle)*300
+            this.shootDelay = this.shootCooldown
+            this.world.foreground.add(shot)
+        this.shootDelay -= dt

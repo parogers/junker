@@ -43,7 +43,15 @@ class World(object):
 
     @property
     def renderGroups(this):
-        return (this.midground, this.foreground, this.explosions, this.smokeGroup)
+        return (this.midground, 
+                this.foreground, 
+                this.explosions, 
+                this.smokeGroup)
+
+    # Returns the maximum targetting distance for computer AI
+    @property
+    def maxTargetDist(this):
+        return this.disp.get_width()/2
 
     def setup(this):
         # Load the terrains
@@ -77,6 +85,13 @@ class World(object):
         gun.pos = vector(430, 3600)
         this.midground.add(gun)
         this.foreground.add(gun.turret)
+        this.enemies.add(gun)
+
+        gun = GunTurretBase(this)
+        gun.pos = vector(230, 3600)
+        this.midground.add(gun)
+        this.foreground.add(gun.turret)
+        this.enemies.add(gun)
 
         for n in range(50):
             e = Enemy(this)
@@ -149,7 +164,8 @@ class World(object):
             this.player.controlRight = keys[pygame.K_RIGHT] or keys[pygame.K_d]
             this.player.controlFire = keys[pygame.K_SPACE] or sum(pygame.mouse.get_pressed()) > 0
             # Always have the turret point at the mouse cursor
-            this.player.point_to(pygame.mouse.get_pos())
+            pos = cam.camera_to_map(pygame.mouse.get_pos())
+            this.player.turret.point_to(pos)
 
             dt = clock.tick(fps)/1000.0
             #if (int(time.time()) - int(lastTime) > 0):
@@ -165,7 +181,8 @@ class World(object):
             cam.pos = (xpos, this.player.pos.y)
             cam.render()
 
-            # Position the sprites on the screen, based on where the camera is located
+            # Position the sprites on the screen, based on where the camera is 
+            # located.
             for g in this.renderGroups:
                 for sp in g:
                     sp.update_rect(cam)
