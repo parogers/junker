@@ -57,7 +57,7 @@ class Tank(Base):
 
     def __init__(this, world):
         super(Tank, this).__init__(world)
-        this.anim = Animation(Loader.loader.load_image("tank/base.png"), 4)
+        this.anim = Loader.loader.load_animation("tank/base.png", 4)
         this.shotImage = Loader.loader.load_image("playershot.png")
         this.rect = this.anim[0].get_rect()
         this.turret = TankTurret(this)

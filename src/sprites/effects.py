@@ -22,7 +22,6 @@ class Fire(Base):
 
     def update(this, dt):
         this.frame += this.fps*dt
-        #this.image = this.anim[this.frame]
         if (this.duration != None):
             this.duration -= dt
             if (this.duration <= 0):
@@ -43,7 +42,7 @@ class Fire(Base):
 class Shot(Base):
     def __init__(this, owner, img):
         super(Shot, this).__init__(owner.world)
-        this.anim = Animation(img, 1)
+        this.anim = Animation([img])
         this.rotSpeed = 720
         this.angle = 0
         this.lifetime = 1
@@ -118,9 +117,11 @@ class Smoke(Base):
 
     def __init__(this, world, pos=None, size=50):
         super(Smoke, this).__init__(world)
-        smokeImg = Loader.loader.load_image("smoke-mask.png")
-        if (not Smoke.frames):
-            Smoke.frames = []
+        # We only need to build the smoke animation once, and share it
+        # across all smoke instances.
+        if (not Smoke.anim):
+            smokeImg = Loader.loader.load_image("smoke-mask.png")
+            frames = []
             nframes = 10
             for n in range(nframes):
                 value = (nframes-n)/float(nframes)
@@ -132,23 +133,24 @@ class Smoke(Base):
                 multAlpha = alpha * (value**0.5)
                 alpha[:] = multAlpha.astype(numpy.uint8)
 
-                Smoke.frames.append(img)
+                frames.append(img)
+            Smoke.anim = Animation(frames)
 
         this.frame = 0
         this.fps = 10+random.random()*2
-        this.image = this.frames[0]
-        this.rect = this.image.get_rect()
+        #this.image = this.frames[0]
+        #this.rect = this.image.get_rect()
         if (pos): this.pos = pos
 
     def update(this, dt):
         this.pos += this.vel*dt
         this.frame += dt*this.fps
-        if (this.frame >= len(this.frames)):
+        if (this.frame >= len(this.anim)):
             this.kill()
             return
-        this.image = this.frames[int(this.frame)]
-        this.rect.size = this.image.get_size()
-        this.rect.center = (int(this.pos.x), int(this.pos.y))
+        #this.image = this.frames[int(this.frame)]
+        #this.rect.size = this.image.get_size()
+        #this.rect.center = (int(this.pos.x), int(this.pos.y))
 
 class Explosion(Base):
     frames = None

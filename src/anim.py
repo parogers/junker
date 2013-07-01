@@ -9,9 +9,14 @@ class Animation(object):
     loopTo = 0
     origin = (0, 0)
 
-    def __init__(this, img, numFrames):
-        this.img = img
-        this.numFrames = numFrames
+    def __init__(this, imgs):
+        #this.img = img
+        #this.numFrames = numFrames
+        this.images = imgs
+
+    @property
+    def numFrames(this):
+        return len(this.images)
 
     @property
     def size(this):
@@ -19,14 +24,30 @@ class Animation(object):
 
     @property
     def width(this):
-        return int(this.img.get_width()/this.numFrames)
+        #return int(this.img.get_width()/this.numFrames)
+        return this.images[0].get_width()
 
     @property
     def height(this):
-        return this.img.get_height()
+        #return this.img.get_height()
+        return this.images[0].get_height()
+
+    @staticmethod
+    def fromImage(img, numFrames):
+        imgs = []
+        width = img.get_width() / numFrames
+        for n in range(numFrames):
+            imgs.append(
+                img.subsurface(n*width, 0, width, img.get_height()))
+        return Animation(imgs)
+
+    def __len__(this):
+        return len(this.images)
 
     def __getitem__(this, fnum):
         fnum = int(fnum)
         if (fnum < 0 or fnum >= this.numFrames):
             fnum = (fnum-this.loopTo) % (this.numFrames-this.loopTo)+this.loopTo
-        return this.img.subsurface(fnum*this.width, 0, this.width, this.height)
+        #return this.img.subsurface(fnum*this.width, 0, this.width, this.height)
+        return this.images[fnum]
+

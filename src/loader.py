@@ -39,7 +39,7 @@ class Loader(object):
         img = this.load_image(fname)
         if (scale != 1):
             img = pygame.transform.rotozoom(img, 0, scale)
-        return Animation(img, nframes)
+        return Animation.fromImage(img, nframes)
 
     def load_level(this, fname, tileMapping):
         (base, ext) = os.path.splitext(fname)

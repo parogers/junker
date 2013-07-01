@@ -42,6 +42,8 @@ class Base(pygame.sprite.Sprite):
     def take_damage(this, dmg):
         pass
 
+    # Updates the screen position of this sprite (given the camera). This
+    # function also updates the sprite image and handles rotations too.
     def update_rect(this, camera):
         if (this.anim):
             this.image = this.anim[int(this.frame)]
