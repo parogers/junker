@@ -42,7 +42,7 @@ class Fire(Base):
 class Shot(Base):
     def __init__(this, owner, img):
         super(Shot, this).__init__(owner.world)
-        this.anim = Animation([img])
+        this.anim = Animation(img)
         this.rotSpeed = 720
         this.angle = 0
         this.lifetime = 1
@@ -55,16 +55,7 @@ class Shot(Base):
     def update(this, dt):
         # Have the projectile rotate as it moves
         this.angle += this.rotSpeed*dt
-        #this.image = pygame.transform.rotozoom(
-        #    this.origImage, int(this.angle/90)*90, 1)
         this.pos += this.vel*dt
-        #this.rect.center = (int(this.pos.x), int(this.pos.y))
-#        if (this.rect.right > this.world.area.right or
-#            this.rect.left < this.world.area.left or
-#            this.rect.top < this.world.area.top or
-#            this.rect.bottom > this.world.area.bottom):
-#            this.kill()
-#            return
         if (this.lifetime < 0):
             this.kill()
 
@@ -72,7 +63,6 @@ class Shot(Base):
 
         # Check for a collision with the terrain
         (r, c, off) = this.level.map_to_grid(this.pos)
-        #if (this.level[r,c,0].solid):
         for h in range(this.level.maxHeight+1):
             if (not this.level[r,c,h].destructable and
                 not this.level[r,c,h].solid):
@@ -113,8 +103,6 @@ class Shot(Base):
         #        this.kill()
 
 class Smoke(Base):
-    frames = None
-
     def __init__(this, world, pos=None, size=50):
         super(Smoke, this).__init__(world)
         # We only need to build the smoke animation once, and share it
@@ -138,40 +126,30 @@ class Smoke(Base):
 
         this.frame = 0
         this.fps = 10+random.random()*2
-        #this.image = this.frames[0]
-        #this.rect = this.image.get_rect()
         if (pos): this.pos = pos
 
     def update(this, dt):
         this.pos += this.vel*dt
         this.frame += dt*this.fps
         if (this.frame >= len(this.anim)):
+            # Ran out of frames - animation finished
             this.kill()
             return
-        #this.image = this.frames[int(this.frame)]
-        #this.rect.size = this.image.get_size()
-        #this.rect.center = (int(this.pos.x), int(this.pos.y))
 
 class Explosion(Base):
-    frames = None
 
     def __init__(this, world, pos=None):
         super(Explosion, this).__init__(world)
-        expImg = Loader.loader.load_image("explosion-mask.png")
-        if (not Explosion.frames):
-            Explosion.frames = []
-            nframes = 6
-            w = expImg.get_width()/nframes
-            for n in range(nframes):
-                #value = (nframes-n)/float(nframes)
-                #scale = (1.2/nframes)*(n+1)
-                #img = pygame.transform.rotozoom(expImg, 0, scale)
-                mask = expImg.subsurface((w*n, 0, expImg.get_height(), w)).convert_alpha()
+        if (not Explosion.anim):
+            expImg = Loader.loader.load_animation("explosion-mask.png", 6)
+            frames = []
+            for n in range(len(expImg)):
+                mask = expImg[n]
                 mask = pygame.transform.rotozoom(mask, 0, 1.2)
 
                 img = pygame.Surface(mask.get_size()).convert_alpha()
                 # Have the explosion shift colors from red to yellow
-                img.fill((255,50+int(200*(n/float(nframes))),50))
+                img.fill((255,50+int(200*(n/float(len(expImg)))),50))
 
                 alpha = pygame.surfarray.pixels_alpha(mask)
                 #multAlpha = alpha * (value**0.5)
@@ -179,20 +157,16 @@ class Explosion(Base):
 
                 pygame.surfarray.pixels_alpha(img)[:] = alpha
 
-                Explosion.frames.append(img)
+                frames.append(img)
+            Explosion.anim = Animation(frames)
 
         this.frame = 0
         this.fps = 14
-        this.image = this.frames[0]
-        this.rect = this.image.get_rect()
         if (pos): this.pos = pos
 
     def update(this, dt):
         this.pos += this.vel*dt/4
         this.frame += dt*this.fps
-        if (this.frame >= len(this.frames)):
+        if (this.frame >= len(this.anim)):
             this.kill()
             return
-        this.image = this.frames[int(this.frame)]
-        this.rect.size = this.image.get_size()
-        this.rect.center = (int(this.pos.x), int(this.pos.y))

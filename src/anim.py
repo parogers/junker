@@ -10,13 +10,11 @@ class Animation(object):
     origin = (0, 0)
 
     def __init__(this, imgs):
-        #this.img = img
-        #this.numFrames = numFrames
-        this.images = imgs
-
-    @property
-    def numFrames(this):
-        return len(this.images)
+        try:
+            this.images = tuple(imgs)
+        except TypeError:
+            # Not actually a list - passed in a single frame
+            this.images = (imgs,)
 
     @property
     def size(this):
@@ -24,7 +22,6 @@ class Animation(object):
 
     @property
     def width(this):
-        #return int(this.img.get_width()/this.numFrames)
         return this.images[0].get_width()
 
     @property
@@ -46,8 +43,7 @@ class Animation(object):
 
     def __getitem__(this, fnum):
         fnum = int(fnum)
-        if (fnum < 0 or fnum >= this.numFrames):
-            fnum = (fnum-this.loopTo) % (this.numFrames-this.loopTo)+this.loopTo
-        #return this.img.subsurface(fnum*this.width, 0, this.width, this.height)
+        if (fnum < 0 or fnum >= len(this)):
+            fnum = (fnum-this.loopTo) % (len(this)-this.loopTo)+this.loopTo
         return this.images[fnum]
 
