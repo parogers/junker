@@ -34,6 +34,7 @@ class World(object):
         this.motorSnd = Loader.loader.load_sound("motor-run.wav", vol=0.5)
         this.motorIdleSnd = Loader.loader.load_sound("motor-idle.wav", vol=0.5)
 
+        this.background = pygame.sprite.RenderUpdates()
         this.midground = pygame.sprite.RenderUpdates()
         this.foreground = pygame.sprite.RenderUpdates()
         this.explosions = pygame.sprite.RenderUpdates()
@@ -43,7 +44,8 @@ class World(object):
 
     @property
     def renderGroups(this):
-        return (this.midground, 
+        return (this.background,
+                this.midground, 
                 this.foreground, 
                 this.explosions, 
                 this.smokeGroup)
@@ -83,13 +85,13 @@ class World(object):
 
         gun = GunTurretBase(this)
         gun.pos = vector(430, 3600)
-        this.midground.add(gun)
+        this.background.add(gun)
         this.foreground.add(gun.turret)
         this.enemies.add(gun)
 
         gun = GunTurretBase(this)
         gun.pos = vector(230, 3600)
-        this.midground.add(gun)
+        this.background.add(gun)
         this.foreground.add(gun.turret)
         this.enemies.add(gun)
 
@@ -190,9 +192,9 @@ class World(object):
             this.display.blit(cam.surf, (0, 0))
 
             # Render the enemies first so the player always appears on top
-            lst = this.midground.draw(this.disp)
-            lst += this.foreground.draw(this.disp)
-            lst += this.explosions.draw(this.disp)
-            lst += this.smokeGroup.draw(this.disp)
+            lst = []
+            for g in this.renderGroups:
+                lst += g.draw(this.disp)
+
             # Update display
             pygame.display.flip()

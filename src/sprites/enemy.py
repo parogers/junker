@@ -3,7 +3,7 @@
 import random
 
 from base import Base
-from effects import Shot, Explosion, Smoke
+from effects import Shot, Explosion, Smoke, Fire
 from vector import vector
 from loader import Loader
 from anim import Animation
@@ -64,12 +64,23 @@ class GunTurretBase(Base):
         super(GunTurretBase, this).__init__(this)
         this.shotImage = Loader.loader.load_image("playershot.png")
         this.world = world
-        this.anim = Loader.loader.load_animation("gun-turret/base.png", 1)
+        this.anim = Loader.loader.load_animation("gun-turret/base.png", 2)
         this.turret = GunTurret(this)
         this.shootDelay = 0
         this.shootCooldown = 0.4
 
+    def take_damage(this, dmg):
+        if (this.turret):
+            this.turret.kill()
+            this.turret = None
+            this.frame = 1
+            fire = Fire(this.world)
+            fire.pos = this.pos - vector(0, 10)
+            this.world.explosions.add(fire)
+
     def update(this, dt):
+        if (not this.turret):
+            return
         this.turret.pos = this.pos
         if (abs(this.world.player.pos - this.pos) > this.world.maxTargetDist):
             # Player is too far away
