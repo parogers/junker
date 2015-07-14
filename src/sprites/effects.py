@@ -73,14 +73,18 @@ class Shot(Base):
             if (not this.level[r,c,h].destructable):
                 break
             # Replace the terrain with a burnt patch of ground
-            del this.level[r,c,h]
-            this.level.update_cache_single((r, c, h))
-            this.level.fill_area(r, r, c, c, h, "burnt2")
+            this.level.fill_area(r, r, c, c, h, None)
+            this.level.fill_area(r, r, c, c, h, "burnt")
+            #this.level.fill_area(r, r+1, c, c+1, h-1, "burnt")
+
+            # Add some random fire near the centre of the tile
+            # that was destroyed.
+            tilePos = vector(this.level.grid_to_map(r, c))
 
             for n in range(random.randint(1, 3)):
                 fire = Fire(this.world, duration=random.uniform(2,8))
-                fire.pos = (this.pos + 
-                            random.uniform(3,8)*
+                fire.pos = (tilePos + 
+                            random.uniform(3,5)*
                             vector.from_angle(random.uniform(0,360)))
                 fire.frame = random.uniform(0,10)
                 fire.fps = random.uniform(5,10)

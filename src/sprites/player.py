@@ -101,23 +101,18 @@ class Tank(Base):
                 # Check if the new position is blocked by the terrain
                 col = pygame.Rect((0,0), this.collisionSize)
                 col.center = newpos.toint()
-                (r1, r2, c1, c2, off) = this.level.map_to_grid(col)
-                hit = False
-                for r in range(r1, r2+1):
-                    for c in range(c1, c2+1):
-                        for h in range(0, this.level.maxHeight+1):
-                            if (this.level[r,c,h].solid):
-                                hit = True
 
-                if (not hit):
+                if (not this.level.check_solid(col)):
                     this.pos = newpos
                     this.frame -= 10*dt
                     break
         else:
+            # The tank has come to a stop
             if (this.motorSndCh):
                 this.motorSndCh.stop()
                 this.motorSndCh = None
             if (not this.motorIdleSndCh):
+                # Start playing the idle sound
                 this.motorIdleSndCh = this.world.motorIdleSnd.play(-1)
 
         this.rect.size = this.anim.size

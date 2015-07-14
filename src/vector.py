@@ -2,8 +2,11 @@ import math
 
 class vector(object):
     def __init__(this, x=0, y=0):
-        this.x = x
-        this.y = y
+        try:
+            (this.x, this.y) = x
+        except TypeError:
+            this.x = x
+            this.y = y
 
     def __len__(this):
         return 2

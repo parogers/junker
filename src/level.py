@@ -8,6 +8,35 @@ TILEH = 16
 
 MIN_HEIGHT = -1
 
+# n,w
+TOP_LEFT_DEF = {
+    (0,0) : "topLeft",
+    (1,0) : "left", 
+    (0,1) : "top", 
+    (1,1) : None,
+}
+# n,e
+TOP_RIGHT_DEF = {
+    (0,0) : "topRight", 
+    (1,0) : "right", 
+    (0,1) : "top", 
+    (1,1) : None
+}
+# s,w
+BOTTOM_LEFT_DEF  = {
+    (0,0) : "bottomLeft", 
+    (1,0) : "left", 
+    (0,1) : "bottom", 
+    (1,1) : None
+}
+# s,e
+BOTTOM_RIGHT_DEF = {
+    (0,0) : "bottomRight", 
+    (1,0) : "right", 
+    (0,1) : "bottom", 
+    (1,1) : None
+}
+
 class Tileset(object):
     # Sound effects
     # Dust effect
@@ -78,35 +107,6 @@ class Tileset(object):
         assert(this.name)
         (r, c, h) = pos
 
-        # n,w
-        topLeftDef = {
-            (0,0) : "topLeft",
-            (1,0) : "left", 
-            (0,1) : "top", 
-            (1,1) : None,
-        }
-        # n,e
-        topRightDef = {
-            (0,0) : "topRight", 
-            (1,0) : "right", 
-            (0,1) : "top", 
-            (1,1) : None
-        }
-        # s,w
-        bottomLeftDef  = {
-            (0,0) : "bottomLeft", 
-            (1,0) : "left", 
-            (0,1) : "bottom", 
-            (1,1) : None
-        }
-        # s,e
-        bottomRightDef = {
-            (0,0) : "bottomRight", 
-            (1,0) : "right", 
-            (0,1) : "bottom", 
-            (1,1) : None
-        }
-
         name = this.name
         n = this.connects_to(layer[r-1,c,h])
         s = this.connects_to(layer[r+1,c,h])
@@ -120,22 +120,22 @@ class Tileset(object):
         if (n and w and not nw): 
             topLeft = "bottomRightHole"
         else: 
-            topLeft = topLeftDef[n,w]
+            topLeft = TOP_LEFT_DEF[n,w]
 
         if (n and e and not ne): 
             topRight = "bottomLeftHole"
         else:
-            topRight = topRightDef[n,e]
+            topRight = TOP_RIGHT_DEF[n,e]
 
         if (s and w and not sw):
             bottomLeft = "topRightHole"
         else: 
-            bottomLeft = bottomLeftDef[s,w]
+            bottomLeft = BOTTOM_LEFT_DEF[s,w]
 
         if (s and e and not se):
             bottomRight = "topLeftHole"
         else: 
-            bottomRight = bottomRightDef[s,e]
+            bottomRight = BOTTOM_RIGHT_DEF[s,e]
 
         if (not topLeft): topLeft = "base"
         if (not topRight): topRight = "base"
@@ -157,12 +157,15 @@ class Level(object):
     layers = None
     world = None
     bg = None
-    rows = 0
-    cols = 0
+    minRow = sys.maxint
+    maxRow = -sys.maxint
+    minCol = sys.maxint
+    maxCol = -sys.maxint
     _tiles = None
     _cached = None
-    # If not None, the level instance will track a list of changes made to the map. This is 
-    # used by the Camera so it knows what cells have to be redrawn.
+    # If not None, the level instance will track a list of changes made to 
+    # the map. This is used by the Camera so it knows what cells have to be 
+    # redrawn.
     updates = None
 
     def __init__(this, world=None):
@@ -200,12 +203,32 @@ class Level(object):
             tile = value.name
         this.maxHeight = max(this.maxHeight, pos[2])
         this._tiles[pos] = tile
+        # Update the min/max row/columns
+        this.minRow = min(this.minRow, r)
+        this.maxRow = max(this.maxRow, r)
+        this.minCol = min(this.minCol, c)
+        this.maxCol = max(this.maxCol, c)
 
     def __delitem__(this, pos):
         try:
             del this._tiles[pos]
         except KeyError:
             pass
+
+    @property
+    def rows(this):
+        return (this.maxRow - this.minRow + 1)
+
+    @property
+    def cols(this):
+        return (this.maxCol - this.minCol + 1)
+
+    @property
+    def area(this):
+        return pygame.Rect(this.minCol*TILEW*2,
+                           this.minRow*TILEH*2,
+                           this.cols*TILEW*2,
+                           this.rows*TILEH*2)
 
     @property
     def tilesets(this):
@@ -223,12 +246,17 @@ class Level(object):
             c2 = max(c2, c)
         return (r1, r2, c1, c2)
 
-    # Converts grid (row, col) to map position (pixels)
     def grid_to_map(this, row, col):
+        """Converts a grid position (row, col) into a map position (pixels).
+        The returned position refers to the centre of the tile."""
         return (col*TILEW*2 + TILEW, row*TILEH*2 + TILEH)
 
-    # Converts from map (pixel) to grid position
     def map_to_grid(this, rect):
+        """Converts a map position (pixels) into a grid position (row, col).
+        The grid position is returned along with the pixel offset (x, y) 
+        into the tile. If a rectangle is passed in, the grid position of the
+        upper-left and lower-right corners are returned along with 
+        the offset."""
         if (len(rect) == 4):
             # Passed in a rectangle
             w = 2*this.tileWidth
@@ -253,6 +281,17 @@ class Level(object):
             return (row, col, offset)
         else:
             raise Exception("invalid rect or pos")
+
+    def check_solid(this, rect):
+        """Returns true if the given rectangle overlaps with 'solid' tiles
+        on the map"""
+        (r1, r2, c1, c2, off) = this.map_to_grid(rect)
+        for r in range(r1, r2+1):
+            for c in range(c1, c2+1):
+                for h in range(0, this.maxHeight+1):
+                    if (this[r,c,h].solid):
+                        return True
+        return False
 
     def render(this, surf, dest, r1, r2, c1, c2):
         #for layer in this.layers:
@@ -284,7 +323,10 @@ class Level(object):
         lst = []
         for r in range(r1, r2+1):
             for c in range(c1, c2+1):
-                this[r,c,h] = tile
+                if (not tile):
+                    del this[r, c, h]
+                else:
+                    this[r,c,h] = tile
                 lst.append((r, c, h))
         this.update_cache_list(lst)
 
@@ -351,7 +393,8 @@ class Camera(object):
         this._rect.center = pos
         this.surf = pygame.Surface(s).convert()
         this.tmpsurf = pygame.Surface(s).convert()
-        # Clear the last position so the next call to 'render' will repaint everything visible
+        # Clear the last position so the next call to 'render' will 
+        # repaint everything visible
         this.lastPos = None
         this.update_grid_pos()
 
@@ -390,19 +433,24 @@ class Camera(object):
     def render(this):
         if (this.lastPos):
             # Scroll the image over by the amount the camera has moved
-            (dx, dy) = (this.pos[0]-this.lastPos[0], this.pos[1]-this.lastPos[1])
-            this.tmpsurf.fill((0,0,0))
+            (dx, dy) = (this.pos[0]-this.lastPos[0], 
+                        this.pos[1]-this.lastPos[1])
+            # TODO - if dx and dy are zero don't bother doing the buffer swap
+            #this.tmpsurf.fill((0,0,0))
             this.tmpsurf.blit(this.surf, (-dx, -dy))
             # Fill in the missing bits of the map that are exposed
             if (dx > 0):
-                # The camera moved to the right, so relative to the camera the map moved to the left
-                r = pygame.Rect((this._rect.right-dx, this._rect.top, dx, this._rect.height))
+                # The camera moved to the right, so relative to the camera 
+                # the map moved to the left
+                r = pygame.Rect((this._rect.right-dx, this._rect.top, 
+                                 dx, this._rect.height))
                 (r1, r2, c1, c2, off) = this.level.map_to_grid(r)
                 destx = this.tmpsurf.get_width()-dx
 
             elif (dx < 0):
                 # Camera moved left, map moved right
-                r = pygame.Rect((this._rect.left, this._rect.top, abs(dx), this._rect.height))
+                r = pygame.Rect((this._rect.left, this._rect.top, 
+                                 abs(dx), this._rect.height))
                 (r1, r2, c1, c2, off) = this.level.map_to_grid(r)
                 destx = 0
 
@@ -414,13 +462,15 @@ class Camera(object):
             # Now do the same for vertical camera movement
             if (dy > 0):
                 # The camera moved down, map moves up
-                r = pygame.Rect((this._rect.left, this._rect.bottom-dy, this._rect.width, dy))
+                r = pygame.Rect((this._rect.left, this._rect.bottom-dy, 
+                                 this._rect.width, dy))
                 (r1, r2, c1, c2, off) = this.level.map_to_grid(r)
                 desty = this.tmpsurf.get_height()-dy
 
             elif (dy < 0):
                 # The camera moved up, map moves down
-                r = pygame.Rect((this._rect.left, this._rect.top, this._rect.width, abs(dy)))
+                r = pygame.Rect((this._rect.left, this._rect.top, 
+                                 this._rect.width, abs(dy)))
                 (r1, r2, c1, c2, off) = this.level.map_to_grid(r)
                 desty = 0
 
@@ -432,8 +482,12 @@ class Camera(object):
             # Swap buffers
             (this.surf, this.tmpsurf) = (this.tmpsurf, this.surf)
         else:
+            # Perform a full rendering of the grid
             (r1, r2, c1, c2) = this.gridPos
-            this.level.render(this.surf, (-this.gridOffset[0], -this.gridOffset[1]), r1, r2, c1, c2)
+            this.level.render(
+                this.surf, 
+                (-this.gridOffset[0], -this.gridOffset[1]), 
+                r1, r2, c1, c2)
 
         # Now do the manual updates
         for pos in this.level.updates:

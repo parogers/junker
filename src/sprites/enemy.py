@@ -30,7 +30,7 @@ class Enemy(Base):
 
         # Check for collisions with the walls
         border = 15
-        area = this.world.area
+        area = this.world.level.area
         if (this.rect.bottom > area.bottom):
             this.vel.y = -abs(this.vel.y)
         elif (this.rect.top < area.top):

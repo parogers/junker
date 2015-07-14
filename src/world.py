@@ -75,6 +75,8 @@ class World(object):
             this.tilesets[terr.name] = terr
 
         this.tilesets["sea"].add_connection(this.tilesets["water"])
+        #this.tilesets["tree"].add_connection(this.tilesets["burnt"])
+        #this.tilesets["burnt"].add_connection(this.tilesets["tree"])
 
         this.player = Tank(this)
         this.player.pos = vector(0, 0)
@@ -82,6 +84,8 @@ class World(object):
         #this.player.world = this
         this.midground.add(this.player)
         this.foreground.add(this.player.turret)
+
+        #return
 
         gun = GunTurretBase(this)
         gun.pos = vector(430, 3600)
@@ -98,8 +102,9 @@ class World(object):
         for n in range(50):
             e = Enemy(this)
             e.world = this
-            e.pos = vector(100, 100)
+            e.pos = vector(300, 3400)
             e.vel = vector.from_angle(random.randint(0, 360))*50
+            print e.vel
             this.enemies.add(e)
             this.midground.add(e)
 
@@ -123,6 +128,8 @@ class World(object):
 
         this.level = Loader.loader.load_level("testlevel.png", tileMapping)
         this.level.world = this
+        print this.level.area
+
         #this.level = generate_level(this, (rows, cols))
 
         this.level.update_cache()
@@ -133,8 +140,6 @@ class World(object):
         fps = 60
         done = False
         clock = pygame.time.Clock()
-
-        this.area = this.display.get_rect().inflate(-10,-10)
 
         cam.level = this.level
         cam.size = this.display.get_size()
@@ -148,8 +153,10 @@ class World(object):
         #pygame.display.flip()
         lastTime = 0
 
-        (r1, r2, c1, c2) = this.level.calculate_map_area()
-        (xpos, ypos) = this.level.grid_to_map(r2-13, (c2-c1)/2)
+        #(r1, r2, c1, c2) = this.level.calculate_map_area()
+        #(xpos, ypos) = this.level.grid_to_map(r2-13, (c2-c1)/2)
+        xpos = this.level.area.center[0]
+        ypos = this.level.area.height - 450
 
         this.player.pos = vector(xpos, ypos)
 
