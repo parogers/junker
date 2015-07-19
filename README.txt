@@ -1,4 +1,0 @@
-junker
-======
-
-Arcade tank shooter
