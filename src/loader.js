@@ -109,3 +109,43 @@ function ImageLoader(basePath)
 	}
     }
 }
+
+function Resources(basePath, imageList, audioList)
+{
+    this.basePath = basePath;
+    this.onComplete = null;
+    this.onError = null;
+    this.imageList = imageList;
+    this.audioList = audioList;
+
+    this.load = function()
+    {
+	this._load_images();
+    }
+
+    this._load_images = function()
+    {
+	var imageLoader = new ImageLoader(this.basePath);
+	imageLoader.onComplete = function(res, ldr) {
+	    return function() {
+		/* Now load the audio */
+		res.images = ldr.images;
+		res._load_audio();
+	    }
+	}(this, imageLoader);
+	imageLoader.load(this.imageList);
+    }
+
+    this._load_audio = function()
+    {
+	var audioLoader = new AudioLoader(this.basePath);
+	audioLoader.onComplete = function(res, ldr) {
+	    return function() {
+		res.sounds = ldr.sounds;
+		if (res.onComplete != null)
+		    res.onComplete();
+	    }
+	}(this, audioLoader);
+	audioLoader.load(this.audioList);
+    }
+}
