@@ -22,7 +22,7 @@ var AUDIO = {
     "shot" : "shot1.wav",
     "tunes" : "music.wav"};
 
-var gameState = new GameState();
+var gameState = null;
 var titleImage = null;
 var tileset = null;
 var player = null;
@@ -88,7 +88,8 @@ function key_down(event)
 
 function key_press(event)
 {
-    event.stopPropagation();
+    var key = event.which || event.keyCode;
+    //event.stopPropagation();
 }
 
 function key_up(event)
@@ -141,16 +142,20 @@ function main()
 	grp.add(spr);
     }*/
 
-    cb = function(st) {
-	return function(ev) {
-	    st.handle_event(ev);
-	}
-    }(gameState);
+    gameState = new GameStateMachine();
+
+    cb = function(ev) {
+	gameState.handle_event(ev);
+    }
+
     canvas.addEventListener("mousedown", cb, true);
+    canvas.addEventListener("keypress", cb, true);
 
-    gameState.change_state(gameState.TITLE);
+    //gameState.change_state(gameState.TITLE);
+    //gameState.draw_frame();
+
+    gameState.change_state("title");
     gameState.draw_frame();
-
     //loop();
 }
 

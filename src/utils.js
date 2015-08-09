@@ -59,6 +59,18 @@ function resize_image(img, width, height)
     return canvas;
 }
 
+function copy_image(img)
+{
+    /* Create the offscreen canvas */
+    var canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    /* Now tile the background image across it */
+    canvas.getContext("2d").drawImage(img, 0, 0);
+    return canvas;
+}
+
 function scroll_canvas(context, w, h, dx, dy)
 {
     var srcx, srcy, srcw, srch;
