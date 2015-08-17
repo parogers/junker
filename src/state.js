@@ -29,7 +29,7 @@ function StateMachine(states)
 	var state = this.get_state();
 	var next = null;
 
-	if (this.lastTime != null) {
+	if (this.lastTime !== null) {
 	    dt = (now - this.lastTime)/1000; // (ms to s)
 	    /* Enforce the minimum FPS */
 	    dt = Math.min(dt, 1.0/MIN_FPS);
@@ -64,7 +64,7 @@ function StateMachine(states)
 	if (!next) {
 	    throw Error("change_state - next state is not set");
 	}
-	if (next == this.current) {
+	if (next === this.current) {
 	    /* Already in this state */
 	    return;
 	}
@@ -87,9 +87,14 @@ function Sequence(next, states)
     this.current = -1;
     this.next = next;
 
+    this.enter = function()
+    {
+	this.current = -1;
+    }
+
     this.update = function(dt) 
     {
-	if (this.current == -1) {
+	if (this.current === -1) {
 	    /* Enter into the first state */
 	    this.current = 0;
 	    this.states[this.current].enter();

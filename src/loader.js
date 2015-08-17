@@ -117,6 +117,8 @@ function Resources(basePath, imageList, audioList)
     this.onError = null;
     this.imageList = imageList;
     this.audioList = audioList;
+    this.tileset = null;
+    this.level = null;
 
     this.load = function()
     {

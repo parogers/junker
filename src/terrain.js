@@ -9,6 +9,20 @@ var FLOWERS = 5;
 var CRATER = 6;
 var WALL = 7;
 var FOG = 8;
+var STONE = 9;
+
+var TERRAIN_NAME_MAPPING = {
+    "-" : NOTHING,
+    "dirt" : DIRT,
+    "grass" : GRASS,
+    "water" : WATER,
+    "trees" : TREES,
+    "flowers" : FLOWERS,
+    "crater" : CRATER,
+    "wall" : WALL,
+    "stone" : STONE,
+    "fog" : FOG,
+};
 
 var SE_HOLE_TILE = 0;
 var S_TILE = 1;
@@ -42,6 +56,7 @@ var GRID_TILE = 50;
 var CRATER_TILE_START = 70;
 var WALL_TILE_START = 85;
 var FOG_TILE_START = 100;
+var STONE_TILE_START = 115;
 
 var TERRAIN_TILE_START = [
     NOTHING_TILE,
@@ -52,7 +67,8 @@ var TERRAIN_TILE_START = [
     FLOWERS_TILE_START,
     CRATER_TILE_START,
     WALL_TILE_START,
-    FOG_TILE_START
+    FOG_TILE_START,
+    STONE_TILE_START
 ];
 
 /* A set of tiles for rendering a tiled grid */
@@ -75,7 +91,7 @@ function Tileset(img, tileWidth, tileHeight)
 	var row = Math.floor(num / this.rows);
 	var col = num % this.rows;
 	context.drawImage(
-	    tileset.image, 
+	    this.image, 
 	    col*this.tileWidth, row*this.tileHeight, // source
 	    this.tileWidth, this.tileHeight,
 	    destx, desty, // dest
@@ -113,6 +129,7 @@ function Terrain(tileset, layer, base) {
     this.baseTile = TERRAIN_TILE_START[base];
     this.rows = 2*layer.rows;
     this.cols = 2*layer.cols;
+    this.dirty = true;
     /* The grid of subdivided cells */
     this.grid = [];
     for (var row = 0; row < this.rows; row++) {
@@ -147,17 +164,17 @@ function Terrain(tileset, layer, base) {
 		if (col < 0 || col >= this.cols || row < 0 || row >= this.rows)
 		{
 		    /* Outside of the terrain - render a blank image */
-		    if (this.base != NOTHING) {
+		    if (this.base !== NOTHING) {
 			context.drawImage(this.tileset.blank, x, y);
 			//this.tileset.renderTile(this.baseTile, context, x, y);
 		    }
 		} else {
 		    /* Render the tile */
 		    tile = this.grid[row][col];
-		    if (this.baseTile != undefined) {
+		    if (this.baseTile !== undefined) {
 			this.tileset.renderTile(this.baseTile, context, x, y);
 		    }
-		    if (tile != NOTHING_TILE) {
+		    if (tile !== NOTHING_TILE) {
 			this.tileset.renderTile(tile, context, x, y);
 		    }
 		    //this.tileset.renderTile(GRID_TILE, context, x, y);
@@ -175,6 +192,11 @@ function Terrain(tileset, layer, base) {
 
     this.update = function() 
     {
+	if (this.dirty === false) {
+	    return;
+	}
+	this.dirty = true;
+
 	var row=0, col=0;
 	var neTile, nwTile, seTile, swTile;
 	var n, s, e, w, ne, nw, se, sw;
@@ -220,22 +242,22 @@ function Terrain(tileset, layer, base) {
 		} else if (current == TREES) {
 		    other = GRASS;
 		}*/
-		n = (n == current || n == other);
-		s = (s == current || s == other);
-		e = (e == current || e == other);
-		w = (w == current || w == other);
+		n = (n === current || n === other);
+		s = (s === current || s === other);
+		e = (e === current || e === other);
+		w = (w === current || w === other);
 
-		ne = (ne == current || ne == other);
-		nw = (nw == current || nw == other);
-		se = (se == current || se == other);
-		sw = (sw == current || sw == other);
+		ne = (ne === current || ne === other);
+		nw = (nw === current || nw === other);
+		se = (se === current || se === other);
+		sw = (sw === current || sw === other);
 
-		if (current == NOTHING) {
+		if (current === NOTHING) {
 		    nwTile = NOTHING_TILE;
 		    neTile = NOTHING_TILE;
 		    swTile = NOTHING_TILE;
 		    seTile = NOTHING_TILE;
-		} else if (current == DIRT) {
+		} else if (current === DIRT) {
 		    /* Dirt is the base tile so it always renders as a 
 		     * full block of dirt */
 		    nwTile = DIRT_TILE;
@@ -251,7 +273,7 @@ function Terrain(tileset, layer, base) {
 		    else if (n && w) nwTile += NW_HOLE_TILE;
 		    else if (n) nwTile += W_TILE;
 		    else if (w) nwTile += N_TILE;
-		    //else if (current == GRASS && nw) nwTile += GRASS_NW_SE_TILE;
+		    //else if (current === GRASS && nw) nwTile += GRASS_NW_SE_TILE;
 		    else nwTile += NW_TILE;
 
 		    /* Upper-right subtile */
@@ -259,7 +281,7 @@ function Terrain(tileset, layer, base) {
 		    else if (n && e) neTile += NE_HOLE_TILE;
 		    else if (n) neTile += E_TILE;
 		    else if (e) neTile += N_TILE;
-		    //else if (current == GRASS && ne) neTile += GRASS_NE_SW_TILE;
+		    //else if (current === GRASS && ne) neTile += GRASS_NE_SW_TILE;
 		    else neTile += NE_TILE;
 
 		    /* Lower-left subtile */
@@ -267,7 +289,7 @@ function Terrain(tileset, layer, base) {
 		    else if (s && w) swTile += SW_HOLE_TILE;
 		    else if (s) swTile += W_TILE;
 		    else if (w) swTile += S_TILE;
-		    //else if (current == GRASS && sw) swTile += GRASS_SW_NE_TILE;
+		    //else if (current === GRASS && sw) swTile += GRASS_SW_NE_TILE;
 		    else swTile += SW_TILE;
 
 		    /* Lower-right subtile */
@@ -275,7 +297,7 @@ function Terrain(tileset, layer, base) {
 		    else if (s && e) seTile += SE_HOLE_TILE;
 		    else if (s) seTile += E_TILE;
 		    else if (e) seTile += S_TILE;
-		    //else if (current == GRASS && se) seTile += GRASS_SE_NW_TILE;
+		    //else if (current === GRASS && se) seTile += GRASS_SE_NW_TILE;
 		    else seTile += SE_TILE;
 		}
 
@@ -314,6 +336,7 @@ function TerrainView(terrains, width, height)
     this.tileHeight = this.terrain.tileset.tileHeight;
     this.cols = Math.ceil(width / this.tileWidth)+1;
     this.rows = Math.ceil(height / this.tileHeight)+1;
+
     /* Create a canvas object to hold the pre-rendered tiles */
     this.canvas = document.createElement("canvas");
     this.canvas.width = this.cols * this.tileWidth;
@@ -342,6 +365,11 @@ function TerrainView(terrains, width, height)
 
     this.update = function()
     {
+	/* Update the terrain layers that are part of this view */
+	for (var n = 0; n < this.terrains.length; n++) {
+	    this.terrains[n].update();
+	}
+
 	/* Calculate the cell position of the camera (upper-left) */
 	var cellPos = this.terrain.get_cell_pos(this.xpos, this.ypos);
 	var row = cellPos[0];
@@ -349,7 +377,7 @@ function TerrainView(terrains, width, height)
 	this.xoffset = cellPos[2];
 	this.yoffset = cellPos[3];
 
-	if (this.lastx == null || 
+	if (this.lastx === null || 
 	    Math.abs(row-this.startRow) > 1 ||
 	    Math.abs(col-this.startCol) > 1) {
 	    /* Either this is the first time rendering the map, or the camera
@@ -367,14 +395,14 @@ function TerrainView(terrains, width, height)
 	     * a maximum of one tile size. It could be extended to handle
 	     * larger steps (up to two tiles should be okay) */
 
-	    if (row != this.startRow || col != this.startCol) {
+	    if (row !== this.startRow || col !== this.startCol) {
 		/* The camera has moved far enough that some of it's view lies
 		 * outside of the rendering area. So shift the map to make room 
 		 * for the newly visible area. */
 		var dx = (this.startCol-col)*this.tileWidth;
 		var dy = (this.startRow-row)*this.tileHeight;
 
-		if (this.terrains[0].base == NOTHING) {
+		if (this.terrains[0].base === NOTHING) {
 		    /* The rendered terrain (probably) has transparent
 		     * areas, so we can't scroll the image by drawing it
 		     * back onto itself. We need to use a slightly slower

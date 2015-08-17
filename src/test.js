@@ -35,6 +35,12 @@ var shot = null;
 var music = null;
 var resources = null;
 
+function log_message(txt)
+{
+    var div = document.getElementById("message_area");
+    div.innerHTML += txt + "<br/>";
+}
+
 function documentLoaded(cvs)
 {
     canvas = cvs;
@@ -106,8 +112,11 @@ function key_up(event)
 /* Mainline */
 /************/
 
+/* The main entry point for the game, called after the basic resources
+ * like sounds and images have been loaded. */
 function main()
 {
+    log_message("Starting game");
     function update(dt)
     {
 	this.tm += dt;
@@ -115,6 +124,9 @@ function main()
 	this.y = 300+100*Math.sin(1.5*this.tm);
 	//this.y += 500*dt;
     }
+
+    /* Construct the tileset */
+    resources.tileset = new Tileset(resources.images.tiles, TILEW, TILEH);
 
     player = new Sprite();
     player.controls = new Controls();
@@ -151,12 +163,18 @@ function main()
     canvas.addEventListener("mousedown", cb, true);
     canvas.addEventListener("keypress", cb, true);
 
-    //gameState.change_state(gameState.TITLE);
-    //gameState.draw_frame();
-
     gameState.change_state("title");
     gameState.draw_frame();
-    //loop();
+
+/*    $.ajax({
+	url: "something.txt",
+	dataType: "text",
+	success: function(data) {
+	    alert("DONE " + data);
+	}
+    });*/
+
+    log_message("Entering mainloop...");
 }
 
 var lastTime = null;

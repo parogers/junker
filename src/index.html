@@ -7,6 +7,13 @@
     canvas#area {
       border: solid 1px;
     }
+
+    #message_area {
+    border: solid 1px;
+    width: 800px;
+    height: 100px;
+    overflow-y: scroll;
+    }
   </style>
 </head>
 
@@ -21,9 +28,13 @@
   <script src="state.js"></script>
   <script src="title.js"></script>
   <script src="trans.js"></script>
+  <script src="level.js"></script>
   <script src="test.js"></script>
 
   <canvas tabindex="1" id="area" width="800" height="600"></canvas>
+
+  <div id="message_area">
+  </div>
 
   <script>
     $(document).ready(function() {
