@@ -1,3 +1,22 @@
+/* JUNKER - Arcade tank shooter written in Javascript using HTML5
+ * Copyright (C) 2015  Peter Rogers (peter.rogers@gmail.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * See LICENSE.txt for the full text of the license.
+ */
+
 /* turret.js */
 
 /* Stationary turret that tracks and shoots at the player periodically */
@@ -16,8 +35,6 @@ function Turret()
     this.cooldown = 0;
     /* Whether we are tracking the player */
     this.tracking = false;
-
-    //this.set_image(resources.images.turretBase);
 }
 
 Turret.prototype = new Sprite;
@@ -26,6 +43,8 @@ Turret.prototype.update = function(dt)
 {
     if (this.gunSprite === null) 
     {
+	this.set_image(resources.images.turretBase);
+
 	/* Build the gun sprite and add it to the level */
 	this.gunSprite = new Sprite();
 	this.gunSprite.set_image(resources.images.turretGun);
