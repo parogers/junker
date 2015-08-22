@@ -16,7 +16,10 @@ var IMAGES = {
     "title" : "junker-title.png", 
     "bg3" : "bg.jpg",
     "bg2" : "bg2.png",
-    "tiles" : "tiles2.png"};
+    "tiles" : "tiles2.png",
+    "turretBase" : "turret/turret-base.png",
+    "turretGun" : "turret/turret-gun.png"
+};
 
 var AUDIO = {
     "shot" : "shot1.wav",

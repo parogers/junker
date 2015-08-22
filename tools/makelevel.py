@@ -31,6 +31,7 @@ def extract_level_info(src):
     proc = subprocess.Popen(["exiftool", "-comment", "-b", src],
                             stdout=subprocess.PIPE)
     (out, err) = proc.communicate()
+    return out
 
 def extract_layer(src, name):
     tmp = tempfile.NamedTemporaryFile(suffix=".png")
@@ -41,6 +42,10 @@ def extract_layer(src, name):
 
     # Parse the image and generate a layer of terrain
     img = PIL.Image.open(tmp.name)
+    return img
+
+def extract_terrain(src, name):
+    img = extract_layer(src, name)
     (w, h) = img.size
     layer = []
     for y in range(h):
@@ -51,12 +56,21 @@ def extract_layer(src, name):
             layer[-1].append(TERRAIN_NAMES.index(terr))
     return layer
 
-def extract_level_grid(src):
-    n = 0
-    layers = []
-    n += 1
-
-    return layers
+def extract_enemies(src):
+    lst = []
+    img = extract_layer(src, "enemies")
+    for x in range(img.size[0]):
+        for y in range(img.size[1]):
+            rgba = img.getpixel((x, y))
+            if (rgba[-1] == 0):
+                continue
+            try:
+                enemy = enemyColours[rgba[0:-1]]
+            except KeyError:
+                pass
+            else:
+                lst.append((enemy, x, y))
+    return lst
 
 #####
 
@@ -73,19 +87,22 @@ src = args.src[0]
 dest = args.dest[0]
 
 # Extract level info from the XCF file
-extract_level_info(src)
-#layers = extract_level_grid(src)
+info = extract_level_info(src)
+enemyColours = {}
+for line in info.split("\n"):
+    if (line):
+        (name, r, g, b) = line.split()
+        enemyColours[int(r), int(g), int(b)] = name
 
-#out = {"terrains" : TERRAIN_NAMES, "layers" : layers}
-
-ground = extract_layer(src, "ground")
-midground = extract_layer(src, "midground")
+ground = extract_terrain(src, "ground")
+midground = extract_terrain(src, "midground")
+enemies = extract_enemies(src)
 
 out = {"terrains" : TERRAIN_NAMES,
        "ground" : ground,
-       "midground" : midground}
+       "midground" : midground,
+       "enemies" : enemies}
 
 fd = file(dest, "w")
 fd.write(json.dumps(out))
 fd.close()
-
