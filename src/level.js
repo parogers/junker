@@ -39,7 +39,6 @@ function Level(tileset, rows, cols)
     this.terrainView.xpos = 50;
     this.terrainView.ypos = this.rows*TILEH*2-2*canvas.height;
 
-    this.player = null;
     /* Sprite groups for things on the ground, hovering above the ground
      * and those in the air. */
     this.groundSprites = new SpriteGroup();
@@ -47,10 +46,22 @@ function Level(tileset, rows, cols)
     this.airSprites = new SpriteGroup();
     this.sprites = null;
 
+    this.player = new Player();
+    //this.player.controls = new Controls();
+    //this.player.img = resources.images.dot2;
+    this.player.x = this.terrainView.xpos + 100;
+    this.player.y = this.terrainView.ypos + 200;
+    this.player.level = this;
+    this.groundSprites.add(this.player);
+    //player.rotation = 0.4;
+
     this.update = function(dt) 
     {
 	//this.terrainView.xpos = ...;
-	//this.terrainView.ypos = ...;
+	var bottom = this.terrainView.height*0.7;
+	if (this.player.y < this.terrainView.ypos + bottom) {
+	    this.terrainView.ypos = this.player.y - bottom;
+	}
 	this.terrainView.update(dt);
 	this.groundSprites.update(dt);
 	this.middleSprites.update(dt);
@@ -59,9 +70,10 @@ function Level(tileset, rows, cols)
 
     this.draw_frame = function(context)
     {
-	this.terrainView.render(context, 0, 0);
 	context.save();
+	//context.scale(2, 2);
 	try {
+	    this.terrainView.render(context, 0, 0);
 	    /* The sprite rendering code isn't aware of the terrain view, so
 	     * we need to translate the graphics context so the sprites that
 	     * should be visible are visible when rendered. */
@@ -82,6 +94,32 @@ function Level(tileset, rows, cols)
 	} finally {
 	    context.restore();
 	}
+    }
+
+    /* Returns the terrain type (ground) at the given map position */
+    this.get_ground_terrain = function(x, y)
+    {
+	var row = (y/(2*TILEW))|0;
+	var col = (x/(2*TILEW))|0;
+	if (row >= 0 && row < this.ground.rows &&
+	    col >= 0 && col < this.ground.cols) {
+	    return this.ground[row][col];
+	}
+	return NOTHING;
+    }
+
+    /* Checks if the given map coordinate is passable, or blocked */
+    this.check_passable = function(x, y) 
+    {
+	var row = (y/(2*TILEW))|0;
+	var col = (x/(2*TILEW))|0;
+	if (row >= 0 && row < this.ground.rows &&
+	    col >= 0 && col < this.ground.cols) {
+	    return ((this.ground[row][col] == DIRT ||
+		     this.ground[row][col] == GRASS) &&
+		    this.midground[row][col] == NOTHING);
+	}
+	return false;
     }
 }
 

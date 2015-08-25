@@ -79,8 +79,8 @@ function TitleScreen()
     this.update = function(dt)
     {
 	this.time += dt;
-	this.fogview.xpos = this.view.xpos + 50*Math.cos(this.time/3);
-	this.fogview.ypos = this.view.ypos + 10*Math.sin(this.time/10);
+	this.fogview.xpos = this.view.xpos + 50*Math.cos(this.time/3.0);
+	this.fogview.ypos = this.view.ypos + 10*Math.sin(this.time/10.0);
 
 	/* Update the terrains */
 	this.fogview.update();

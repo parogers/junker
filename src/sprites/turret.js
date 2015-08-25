@@ -41,22 +41,21 @@ Turret.prototype = new Sprite;
 
 Turret.prototype.update = function(dt) 
 {
-    if (this.gunSprite === null) 
+    if (this.img === null) 
     {
 	this.set_image(resources.images.turretBase);
 
 	/* Build the gun sprite and add it to the level */
-	this.gunSprite = new Sprite();
-	this.gunSprite.set_image(resources.images.turretGun);
-	this.gunSprite.offsetX = this.gunSprite.width()/2;
-	this.gunSprite.offsetY = this.gunSprite.height()/2;
-	this.gunSprite.x = this.x+this.offsetX;
-	this.gunSprite.y = this.y+this.offsetY;
+	this.gunSprite = new Sprite(resources.images.turretGun);
+	//this.gunSprite.offsetX = this.gunSprite.width()/2;
+	//this.gunSprite.offsetY = this.gunSprite.height()/2;
+	this.gunSprite.x = this.x; //+this.offsetX;
+	this.gunSprite.y = this.y; //+this.offsetY;
 	/* Make sure the gun is rendered above the turret base */
 	this.level.middleSprites.add(this.gunSprite);
     }
 
-    this.gunSprite.rotation += 3*dt;
+    //this.gunSprite.rotation += 3*dt;
 
     /* Aim the barrel towards the player, if they're close enough */
     /* ... */

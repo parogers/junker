@@ -95,7 +95,8 @@ function GameStateMachine()
 		resources.level.update(dt);
 	    },
 	    handle_event: function(event) {
-		if (event.type === "mousedown" || event.type === "keypress") {
+		var key = event.which || event.keyCode;
+		if (event.type === "keypress" && key == 27) {
 		    return "title";
 		}
 	    },

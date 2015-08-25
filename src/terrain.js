@@ -162,8 +162,8 @@ function Terrain(tileset, layer, base) {
      * map position */
     this.get_cell_pos = function(x, y)
     {
-	var row = Math.floor(y/this.tileset.tileHeight)|0;
-	var col = Math.floor(x/this.tileset.tileWidth)|0;
+	var row = (y/this.tileset.tileHeight)|0;
+	var col = (x/this.tileset.tileWidth)|0;
 	var xoffset = x - col*this.tileset.tileWidth;
 	var yoffset = y - row*this.tileset.tileHeight;
 	return [row, col, xoffset, yoffset];
@@ -390,11 +390,17 @@ function TerrainView(terrains, width, height)
 	}
 
 	/* Calculate the cell position of the camera (upper-left) */
-	var cellPos = this.terrain.get_cell_pos(this.xpos, this.ypos);
+	/*var cellPos = this.terrain.get_cell_pos(this.xpos, this.ypos);
 	var row = cellPos[0];
 	var col = cellPos[1];
 	this.xoffset = cellPos[2];
-	this.yoffset = cellPos[3];
+	this.yoffset = cellPos[3];*/
+
+	var tileset = this.terrain.tileset;
+	var row = (this.ypos/tileset.tileHeight)|0;
+	var col = (this.xpos/tileset.tileWidth)|0;
+	this.xoffset = this.xpos % tileset.tileWidth;
+	this.yoffset = this.ypos % tileset.tileHeight;
 
 	if (this.lastx === null || 
 	    Math.abs(row-this.startRow) > 1 ||
@@ -440,8 +446,6 @@ function TerrainView(terrains, width, height)
 		    this.tempContext = ctx;
 		    this.tempCanvas = cvs;
 
-		    //scroll_canvas(this.context, 
-		    //	      this.canvas.width, this.canvas.height, dx, dy);
 		} else {
 		    this.context.drawImage(this.canvas, dx, dy);
 		}

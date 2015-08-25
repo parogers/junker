@@ -36,8 +36,14 @@ var IMAGES = {
     "bg3" : "bg.jpg",
     "bg2" : "bg2.png",
     "tiles" : "tiles2.png",
+    "tankBase1" : "player/tankbase1.png",
+    "tankBase2" : "player/tankbase2.png",
+    "tankBase3" : "player/tankbase3.png",
+    "tankBase4" : "player/tankbase4.png",
+    "tankGun" : "player/tank-gun.png",
     "turretBase" : "turret/turret-base.png",
-    "turretGun" : "turret/turret-gun.png"
+    "turretGun" : "turret/turret-gun.png",
+    "testing" : "testing.gif"
 };
 
 var AUDIO = {
@@ -47,7 +53,6 @@ var AUDIO = {
 var gameState = null;
 var titleImage = null;
 var tileset = null;
-var player = null;
 var canvas = null;
 var ctx = null;
 var imageLoader = null;
@@ -75,9 +80,9 @@ function documentLoaded(cvs)
 
     //canvas.addEventListener("mousemove", mouse_move, true);
     //canvas.addEventListener("mousedown", mouse_press, true);
-    //canvas.addEventListener("keydown", key_down, true);
-    //canvas.addEventListener("keypress", key_press, true);
-    //canvas.addEventListener("keyup", key_up, true);
+    canvas.addEventListener("keydown", key_down, true);
+    canvas.addEventListener("keypress", key_press, true);
+    canvas.addEventListener("keyup", key_up, true);
 
     resources = new Resources("../media/", IMAGES, AUDIO);
     resources.onComplete = main;
@@ -107,10 +112,10 @@ function key_down(event)
 {
     /* TODO - test this on chrome and IE8- */
     var key = event.which || event.keyCode;
-    if (key == UP) player.controls.up = true;
-    else if (key == DOWN) player.controls.down = true;
-    else if (key == LEFT) player.controls.left = true;
-    else if (key == RIGHT) player.controls.right = true;
+    if (key == UP) controls.up = true;
+    else if (key == DOWN) controls.down = true;
+    else if (key == LEFT) controls.left = true;
+    else if (key == RIGHT) controls.right = true;
     event.stopPropagation();
 }
 
@@ -123,10 +128,10 @@ function key_press(event)
 function key_up(event)
 {
     var key = event.which || event.keyCode;
-    if (key == UP) player.controls.up = false;
-    else if (key == DOWN) player.controls.down = false;
-    else if (key == LEFT) player.controls.left = false;
-    else if (key == RIGHT) player.controls.right = false;
+    if (key == UP) controls.up = false;
+    else if (key == DOWN) controls.down = false;
+    else if (key == LEFT) controls.left = false;
+    else if (key == RIGHT) controls.right = false;
     event.stopPropagation();
 }
 
@@ -150,12 +155,7 @@ function main()
     /* Construct the tileset */
     resources.tileset = new Tileset(resources.images.tiles, TILEW, TILEH);
 
-    player = new Sprite();
-    player.controls = new Controls();
-    player.img = resources.images.dot2;
-    player.update = player_update;
-    player.speed = 150;
-    //player.rotation = 0.4;
+    controls = new Controls();
 
     shot = new AudioPool(resources.sounds.shot);
     shot.set_volume(0.5);
@@ -164,8 +164,8 @@ function main()
     music.set_volume(0.4);
     //music.play();
 
-    grp = new SpriteGroup();
-    grp.add(player);
+    //grp = new SpriteGroup();
+    //grp.add(player);
 
 /*    for (var n = 0; n < 15; n++) {
 	var spr = new Sprite();

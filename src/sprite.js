@@ -22,11 +22,11 @@
 var SpriteID = 0;
 
 /* Sprite */
-function Sprite() {
+function Sprite(img) {
     /* Unique identifier for the sprite (useful for storing sprites in 
      * dictionaries) */
     this.id = SpriteID++;
-    this.img = null;
+    this.img = img || null;
     /* The position of the sprite within the map (the centre point) */
     this.x = 0;
     this.y = 0;
@@ -34,8 +34,13 @@ function Sprite() {
     this.rotation = 0;
     /* The centre of the sprite relative to the upper-left corner of 
      * it's rendered image. */
-    this.offsetX = 0;
-    this.offsetY = 0;
+    if (img) {
+	this.offsetX = img.width/2;
+	this.offsetY = img.height/2;
+    } else {
+	this.offsetX = 0;
+	this.offsetY = 0;
+    }
 }
 
 Sprite.prototype.set_image = function(img)
@@ -79,8 +84,8 @@ SpriteGroup.prototype.render = function(context, clipx1, clipy1, clipx2, clipy2)
 	    context.save();
 	    try {
 		context.translate(
-		    (sprite.x-sprite.offsetX)|0, 
-		    (sprite.y-sprite.offsetY)|0);
+		    sprite.x|0, 
+		    sprite.y|0);
 		context.rotate(sprite.rotation);
 		context.drawImage(
 		    sprite.img, -sprite.offsetX, -sprite.offsetY);
@@ -92,8 +97,8 @@ SpriteGroup.prototype.render = function(context, clipx1, clipy1, clipx2, clipy2)
 	    /* Draw the sprite normally, not rotated */
 	    context.drawImage(
 		sprite.img, 
-		(sprite.x-sprite.offsetX)|0, 
-		(sprite.y-sprite.offsetY)|0);
+		(sprite.x-sprite.offsetX), 
+		(sprite.y-sprite.offsetY));
 	}
     }
 }
