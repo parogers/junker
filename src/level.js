@@ -37,7 +37,7 @@ function Level(tileset, rows, cols)
 	canvas.width, canvas.height);
 
     this.terrainView.xpos = 50;
-    this.terrainView.ypos = this.rows*TILEH*2-2*canvas.height;
+    this.terrainView.ypos = this.rows*TILEH*2-3.5*canvas.height;
 
     /* Sprite groups for things on the ground, hovering above the ground
      * and those in the air. */
@@ -108,18 +108,13 @@ function Level(tileset, rows, cols)
 	return NOTHING;
     }
 
-    /* Checks if the given map coordinate is passable, or blocked */
-    this.check_passable = function(x, y) 
+    /* Checks if the given map position is currently visible */
+    this.check_pos_visible = function(x, y)
     {
-	var row = (y/(2*TILEW))|0;
-	var col = (x/(2*TILEW))|0;
-	if (row >= 0 && row < this.ground.rows &&
-	    col >= 0 && col < this.ground.cols) {
-	    return ((this.ground[row][col] == DIRT ||
-		     this.ground[row][col] == GRASS) &&
-		    this.midground[row][col] == NOTHING);
-	}
-	return false;
+	return (x >= this.terrainView.xpos &&
+		y >= this.terrainView.ypos &&
+		x <= this.terrainView.xpos + this.terrainView.width &&
+		y <= this.terrainView.ypos + this.terrainView.height);
     }
 }
 

@@ -95,9 +95,50 @@ function GameStateMachine()
 		resources.level.update(dt);
 	    },
 	    handle_event: function(event) {
-		var key = event.which || event.keyCode;
-		if (event.type === "keypress" && key == 27) {
-		    return "title";
+		var key=null;
+		switch(event.type) 
+		{
+		case "keypress":
+		    var key = event.which || event.keyCode;
+		    if (key == 27) return "title";
+		    break;
+
+		case "mousemove":
+		    /* TODO - test this on other browsers */
+		    var rect = canvas.getBoundingClientRect();
+		    controls.cursorX = event.clientX - rect.left;
+		    controls.cursorY = event.clientY - rect.top;
+		    break;
+
+		case "mousedown":
+		    controls.fire = true;
+		    break;
+
+		case "mouseup":
+		    controls.fire = false;
+		    break;
+
+		case "keydown":
+		    /* TODO - test this on chrome and IE8- */
+		    var key = event.which || event.keyCode;
+		    if (key == UP) controls.up = true;
+		    else if (key == DOWN) controls.down = true;
+		    else if (key == LEFT) controls.left = true;
+		    else if (key == RIGHT) controls.right = true;
+		    else if (key == FIRE) controls.fire = true;
+		    event.stopPropagation();
+		    break;
+
+		case "keyup":
+		    var key = event.which || event.keyCode;
+		    if (key == UP) controls.up = false;
+		    else if (key == DOWN) controls.down = false;
+		    else if (key == LEFT) controls.left = false;
+		    else if (key == RIGHT) controls.right = false;
+		    else if (key == FIRE) controls.fire = false;
+		    event.stopPropagation();
+		    break;
+
 		}
 	    },
 	    draw_frame: function(ctx) {

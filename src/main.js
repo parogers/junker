@@ -25,6 +25,7 @@ var LEFT = 37;
 var UP = 38;
 var RIGHT = 39;
 var DOWN = 40;
+var FIRE = 65;
 
 var TILEW = 16;
 var TILEH = 16;
@@ -36,10 +37,15 @@ var IMAGES = {
     "bg3" : "bg.jpg",
     "bg2" : "bg2.png",
     "tiles" : "tiles2.png",
+    "shot1" : "shot/shot1.png",
+    "shot2" : "shot/shot2.png",
+    "shot3" : "shot/shot3.png",
+    "shot4" : "shot/shot4.png",
     "tankBase1" : "player/tankbase1.png",
     "tankBase2" : "player/tankbase2.png",
     "tankBase3" : "player/tankbase3.png",
     "tankBase4" : "player/tankbase4.png",
+    "tankWater" : "player/tankbase-water.png",
     "tankGun" : "player/tank-gun.png",
     "turretBase" : "turret/turret-base.png",
     "turretGun" : "turret/turret-gun.png",
@@ -62,10 +68,22 @@ var shot = null;
 var music = null;
 var resources = null;
 
+function Controls()
+{
+    this.up = false;
+    this.down = false;
+    this.left = false;
+    this.right = false;
+    this.fire = false;
+    this.cursorX = 0;
+    this.cursorY = 0;
+}
+
 function log_message(txt)
 {
     var div = document.getElementById("message_area");
     div.innerHTML += txt + "<br/>";
+    div.scrollTop = div.scrollHeight;
 }
 
 function documentLoaded(cvs)
@@ -78,61 +96,9 @@ function documentLoaded(cvs)
 
     canvas.focus();
 
-    //canvas.addEventListener("mousemove", mouse_move, true);
-    //canvas.addEventListener("mousedown", mouse_press, true);
-    canvas.addEventListener("keydown", key_down, true);
-    canvas.addEventListener("keypress", key_press, true);
-    canvas.addEventListener("keyup", key_up, true);
-
     resources = new Resources("../media/", IMAGES, AUDIO);
     resources.onComplete = main;
     resources.load();
-}
-
-var xpos = -1, ypos = -1;
-var y = 10;
-function mouse_press(event)
-{
-    var rect = canvas.getBoundingClientRect();
-//    ctx.fillRect(0,0,50,y);
-    shot.play();
-//    y += 10;
-    xpos = event.clientX - rect.left;
-    ypos = event.clientY - rect.top;
-}
-
-function mouse_move(event)
-{
-    var rect = canvas.getBoundingClientRect();
-    xpos = event.clientX - rect.left;
-    ypos = event.clientY - rect.top;
-}
-
-function key_down(event)
-{
-    /* TODO - test this on chrome and IE8- */
-    var key = event.which || event.keyCode;
-    if (key == UP) controls.up = true;
-    else if (key == DOWN) controls.down = true;
-    else if (key == LEFT) controls.left = true;
-    else if (key == RIGHT) controls.right = true;
-    event.stopPropagation();
-}
-
-function key_press(event)
-{
-    var key = event.which || event.keyCode;
-    //event.stopPropagation();
-}
-
-function key_up(event)
-{
-    var key = event.which || event.keyCode;
-    if (key == UP) controls.up = false;
-    else if (key == DOWN) controls.down = false;
-    else if (key == LEFT) controls.left = false;
-    else if (key == RIGHT) controls.right = false;
-    event.stopPropagation();
 }
 
 /************/
@@ -182,8 +148,12 @@ function main()
 	gameState.handle_event(ev);
     }
 
+    canvas.addEventListener("mousemove", cb, true);
+    canvas.addEventListener("mouseup", cb, true);
     canvas.addEventListener("mousedown", cb, true);
     canvas.addEventListener("keypress", cb, true);
+    canvas.addEventListener("keydown", cb, true);
+    canvas.addEventListener("keyup", cb, true);
 
     gameState.change_state("title");
     gameState.draw_frame();

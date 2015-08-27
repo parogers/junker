@@ -24,12 +24,13 @@ function Player()
     /* Constructor */
     Sprite.call(this);
 
-    this.speed = 120;
+    this.speed = 100;
     this.frames = [
-	resources.images.tankBase1,
-	resources.images.tankBase2,
+	resources.images.tankBase4,
 	resources.images.tankBase3,
-	resources.images.tankBase4];
+	resources.images.tankBase2,
+	resources.images.tankBase1];
+    this.frame = 0;
 
     this.directions = [
 	[225, 270, -45], // north (west, NA, east)
@@ -41,6 +42,21 @@ function Player()
 }
 
 Player.prototype = new Sprite;
+
+Player.prototype.check_passable = function(x, y) 
+{
+    /* Checks if the given map coordinate is passable, or blocked */
+    var row = (y/(2*TILEW))|0;
+    var col = (x/(2*TILEW))|0;
+    if (row >= 0 && row < this.level.ground.rows &&
+	col >= 0 && col < this.level.ground.cols) {
+	return ((this.level.ground[row][col] == DIRT ||
+		 this.level.ground[row][col] == GRASS ||
+		 this.level.ground[row][col] == WATER) &&
+	    	this.level.midground[row][col] == NOTHING);
+    }
+    return false;
+}
 
 Player.prototype.update = function(dt)
 {
@@ -55,7 +71,7 @@ Player.prototype.update = function(dt)
 	this.level.middleSprites.add(this.gunSprite);
     }
 
-    this.gunSprite.rotation += 5*dt;
+    //this.gunSprite.rotation += 5*dt;
 
     var dx = 0, dy = 0;
     if (controls.up) dy = -1;
@@ -79,28 +95,46 @@ Player.prototype.update = function(dt)
     /* Check that the new position isn't blocked */
     if (mag > 0)
     {
-	if (this.level.check_passable(this.x+dx, this.y+dy)) {
+	if (this.check_passable(this.x+dx, this.y+dy)) {
 	    /* The way is clear */
 	    this.x += dx;
 	    this.y += dy;
-	} else if (dy && this.level.check_passable(this.x, this.y+dy)) {
+	} else if (dy && this.check_passable(this.x, this.y+dy)) {
 	    /* We can move forward/backward */
 	    this.y += dy;
-	} else if (dx && this.level.check_passable(this.x+dx, this.y)) {
+	} else if (dx && this.check_passable(this.x+dx, this.y)) {
 	    /* We can move left/right */
 	    this.x += dx;
 	}
+
+	var terr = this.level.get_ground_terrain(this.x, this.y);
+	if (terr == WATER) {
+	    this.img = resources.images.tankWater;
+	} else {
+	    this.frame = (this.frame + 15*dt) % this.frames.length;
+	    this.img = this.frames[this.frame|0];
+	}
     }
+
+    /* Aim the gun at the mouse cursor */
+    var dx = controls.cursorX - (this.x - this.level.terrainView.xpos);
+    var dy = controls.cursorY - (this.y - this.level.terrainView.ypos);
+    this.gunSprite.rotation = Math.atan2(dy, dx);;
+
+    if (controls.fire && !this.lastFire) 
+    {
+	var shot = new Shot();
+	shot.level = this.level;
+	shot.x = this.x;
+	shot.y = this.y;
+	var mag = Math.sqrt(dx*dx + dy*dy);
+	shot.dirX = dx/mag;
+	shot.dirY = dy/mag;
+	this.level.airSprites.add(shot);
+    }
+    this.lastFire = controls.fire;
 
     /* Move the gun sprite back into position */
     this.gunSprite.x = this.x;
     this.gunSprite.y = this.y;
-}
-
-function Controls()
-{
-    this.up = null;
-    this.down = null;
-    this.left = null;
-    this.right = null;
 }
