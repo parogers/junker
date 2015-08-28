@@ -17,8 +17,11 @@
  * See LICENSE.txt for the full text of the license.
  */
 
-/* sprite.js */
+/* sprite.js - The Sprite and SpriteGroup code and concepts are directly
+ * inspired by pygame sprite code. */
 
+/* Global counter for sprite IDs, so that each sprite created gets a 
+ * unique identifier. (useful for storing in dictinoaries) */
 var SpriteID = 0;
 
 /* Sprite */
@@ -151,16 +154,39 @@ SpriteGroup.prototype.clear = function(context, bg)
     }    
 }
 
+/* Add a sprite to this group */
 SpriteGroup.prototype.add = function(sprite) {
     this.sprites[sprite.id] = sprite;
 }
 
+/* Remove a sprite from this group */
 SpriteGroup.prototype.remove = function(sprite) {
-    delete this.sprites[sprite.id];
+    if (this.sprites[sprite.id]) {
+	delete this.sprites[sprite.id];
+    }
 }
 
+/* Call the 'update' function on all sprites in this group */
 SpriteGroup.prototype.update = function(dt) {
     for (var id in this.sprites) {
 	this.sprites[id].update(dt);
     }
+}
+
+/* Returns the (first) sprite that collides with the given map pos */
+SpriteGroup.prototype.check_collision = function(x, y)
+{
+    var sprite = null;
+    for (var id in this.sprites) 
+    {
+	sprite = this.sprites[id]
+	if (x >= sprite.x - sprite.offsetX && 
+	    y >= sprite.y - sprite.offsetY &&
+	    x < sprite.x - sprite.offsetX + sprite.width() &&
+	    y < sprite.y - sprite.offsetY + sprite.height()) 
+	{
+	    return sprite;
+	}
+    }
+    return null;
 }

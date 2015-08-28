@@ -39,12 +39,15 @@ function Level(tileset, rows, cols)
     this.terrainView.xpos = 50;
     this.terrainView.ypos = this.rows*TILEH*2-3.5*canvas.height;
 
+    /* TODO - maintain a list of visible sprites to speed things up */
+
     /* Sprite groups for things on the ground, hovering above the ground
      * and those in the air. */
     this.groundSprites = new SpriteGroup();
     this.middleSprites = new SpriteGroup();
     this.airSprites = new SpriteGroup();
-    this.sprites = null;
+    /* The sprites that are considered to be valid targets for the player */
+    this.targets = new SpriteGroup();
 
     this.player = new Player();
     //this.player.controls = new Controls();
@@ -52,7 +55,7 @@ function Level(tileset, rows, cols)
     this.player.x = this.terrainView.xpos + 100;
     this.player.y = this.terrainView.ypos + 200;
     this.player.level = this;
-    this.groundSprites.add(this.player);
+    this.player.spawn(this);
     //player.rotation = 0.4;
 
     this.update = function(dt) 
@@ -116,6 +119,14 @@ function Level(tileset, rows, cols)
 		x <= this.terrainView.xpos + this.terrainView.width &&
 		y <= this.terrainView.ypos + this.terrainView.height);
     }
+
+    this.remove_sprite = function(spr) 
+    {
+	this.groundSprites.remove(spr);
+	this.middleSprites.remove(spr);
+	this.airSprites.remove(spr);
+	this.targets.remove(spr);
+    }
 }
 
 /* Takes a chunk of JSON type data and returns a Level object */
@@ -155,7 +166,7 @@ function parse_level(data)
 	    e.x = 2*TILEW*x + TILEW;
 	    e.y = 2*TILEH*y + TILEH;
 	    /* The turret base sits on the ground */
-	    level.groundSprites.add(e);
+	    e.spawn(level);
 	}
     }
 

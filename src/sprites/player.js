@@ -31,6 +31,10 @@ function Player()
 	resources.images.tankBase2,
 	resources.images.tankBase1];
     this.frame = 0;
+    /* Time between shots in seconds */
+    this.shotDelay = 0.3;
+    /* Time until the player can shoot again */
+    this.shotCooldown = 0;
 
     this.directions = [
 	[225, 270, -45], // north (west, NA, east)
@@ -60,19 +64,6 @@ Player.prototype.check_passable = function(x, y)
 
 Player.prototype.update = function(dt)
 {
-    if (this.img == null) 
-    {
-	/* Setup the player's tank */
-	this.set_image(this.frames[0]);
-
-	this.gunSprite = new Sprite(resources.images.tankGun);
-	//this.gunSprite.offsetX = this.gunSprite.width()/2;
-	//this.gunSprite.offsetY = this.gunSprite.height()/2;
-	this.level.middleSprites.add(this.gunSprite);
-    }
-
-    //this.gunSprite.rotation += 5*dt;
-
     var dx = 0, dy = 0;
     if (controls.up) dy = -1;
     else if (controls.down) dy = 1;
@@ -121,20 +112,35 @@ Player.prototype.update = function(dt)
     var dy = controls.cursorY - (this.y - this.level.terrainView.ypos);
     this.gunSprite.rotation = Math.atan2(dy, dx);;
 
-    if (controls.fire && !this.lastFire) 
+    if (controls.fire)
     {
-	var shot = new Shot();
-	shot.level = this.level;
-	shot.x = this.x;
-	shot.y = this.y;
-	var mag = Math.sqrt(dx*dx + dy*dy);
-	shot.dirX = dx/mag;
-	shot.dirY = dy/mag;
-	this.level.airSprites.add(shot);
+	if (this.shotCooldown <= 0) 
+	{
+	    var shot = new Shot();
+	    shot.x = this.x;
+	    shot.y = this.y;
+	    var mag = Math.sqrt(dx*dx + dy*dy);
+	    shot.dirX = dx/mag;
+	    shot.dirY = dy/mag;
+	    shot.spawn(this.level);
+	    this.shotCooldown = this.shotDelay;
+	}
     }
-    this.lastFire = controls.fire;
+
+    if (this.shotCooldown > 0) {
+	this.shotCooldown -= dt;
+    }
 
     /* Move the gun sprite back into position */
     this.gunSprite.x = this.x;
     this.gunSprite.y = this.y;
+}
+
+Player.prototype.spawn = function(level)
+{
+    /* Setup the player's tank */
+    this.set_image(this.frames[0]);
+    this.gunSprite = new Sprite(resources.images.tankGun);
+    this.level.middleSprites.add(this.gunSprite);
+    this.level.groundSprites.add(this);
 }

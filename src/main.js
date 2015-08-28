@@ -45,6 +45,14 @@ var IMAGES = {
     "tankBase2" : "player/tankbase2.png",
     "tankBase3" : "player/tankbase3.png",
     "tankBase4" : "player/tankbase4.png",
+
+    "explode1" : "explosion/explode1.png",
+    "explode2" : "explosion/explode2.png",
+    "explode3" : "explosion/explode3.png",
+    "explode4" : "explosion/explode4.png",
+    "explode5" : "explosion/explode5.png",
+    "explode6" : "explosion/explode6.png",
+
     "tankWater" : "player/tankbase-water.png",
     "tankGun" : "player/tank-gun.png",
     "turretBase" : "turret/turret-base.png",
@@ -120,6 +128,21 @@ function main()
 
     /* Construct the tileset */
     resources.tileset = new Tileset(resources.images.tiles, TILEW, TILEH);
+
+    resources.shotFrames = [
+	resources.images.shot1,
+	resources.images.shot2,
+	resources.images.shot3,
+	resources.images.shot4];
+
+    resources.explosionFrames = [
+	resources.images.explode1,
+	resources.images.explode2,
+	resources.images.explode3,
+	resources.images.explode4,
+	resources.images.explode5,
+	resources.images.explode6
+    ];
 
     controls = new Controls();
 

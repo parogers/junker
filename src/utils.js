@@ -50,19 +50,21 @@ function create_tiled_background(img, width, height)
     return bg;
 }
 
+/* Returns a random integer */
 function randint(a, b)
 {
     return (Math.random() * (b-a) + a)|0;
 }
 
+/* Resize the given image to a new size, returning a new canvas */
 function resize_image(img, width, height)
 {
-    /* Create the offscreen canvas */
+    /* Create an offscreen canvas */
     var canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
 
-    /* Now tile the background image across it */
+    /* Calculate the scale factor that fits the image to the desired size */
     var ctx = canvas.getContext("2d");
     var scale = Math.min(canvas.width/img.width, 
 			 canvas.height/img.height);
@@ -78,9 +80,10 @@ function resize_image(img, width, height)
     return canvas;
 }
 
+/* Returns a copy of the given image as a canvas object */
 function copy_image(img)
 {
-    /* Create the offscreen canvas */
+    /* Create an offscreen canvas */
     var canvas = document.createElement("canvas");
     canvas.width = img.width;
     canvas.height = img.height;

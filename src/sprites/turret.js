@@ -43,16 +43,6 @@ Turret.prototype.update = function(dt)
 {
     if (this.img === null) 
     {
-	this.set_image(resources.images.turretBase);
-
-	/* Build the gun sprite and add it to the level */
-	this.gunSprite = new Sprite(resources.images.turretGun);
-	//this.gunSprite.offsetX = this.gunSprite.width()/2;
-	//this.gunSprite.offsetY = this.gunSprite.height()/2;
-	this.gunSprite.x = this.x; //+this.offsetX;
-	this.gunSprite.y = this.y; //+this.offsetY;
-	/* Make sure the gun is rendered above the turret base */
-	this.level.middleSprites.add(this.gunSprite);
     }
 
     //this.gunSprite.rotation += 3*dt;
@@ -70,4 +60,21 @@ Turret.prototype.update = function(dt)
 	    this.cooldown = 1.0 / this.firingRate;
 	}
     }
+}
+
+/* Called to spawn this sprite into the level */
+Turret.prototype.spawn = function(level)
+{
+    this.level = level;
+    this.set_image(resources.images.turretBase);
+    /* Build the gun sprite and add it to the level, centred on the
+     * turret base. */
+    this.gunSprite = new Sprite(resources.images.turretGun);
+    this.gunSprite.x = this.x;
+    this.gunSprite.y = this.y;
+    /* Make sure the gun is rendered above the turret base */
+    this.level.groundSprites.add(this);
+    this.level.middleSprites.add(this.gunSprite);
+    /* Also make the turret (base) a valid target for the player */
+    this.level.targets.add(this);
 }
