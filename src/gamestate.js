@@ -90,6 +90,14 @@ function GameStateMachine()
 
 	/* The gameplay */
 	gameplay: {
+	    enter : function() {
+		/* Switch to a crosshair cursor for gameplay */
+		canvas.style.cursor = "crosshair";
+	    },
+	    leave : function() {
+		/* Switch back to the regular default cursor */
+		canvas.style.cursor = "auto";
+	    },
 	    update: function(dt) {
 		//resources.level.terrainView.ypos -= 100*dt;
 		resources.level.update(dt);

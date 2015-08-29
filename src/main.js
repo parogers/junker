@@ -30,6 +30,7 @@ var FIRE = 65;
 var TILEW = 16;
 var TILEH = 16;
 
+/* TODO - put this into a JSON config file */
 var IMAGES = {
     "dot" : "image.png", 
     "dot2" : "image2.png", 
@@ -37,10 +38,12 @@ var IMAGES = {
     "bg3" : "bg.jpg",
     "bg2" : "bg2.png",
     "tiles" : "tiles2.png",
+
     "shot1" : "shot/shot1.png",
     "shot2" : "shot/shot2.png",
     "shot3" : "shot/shot3.png",
     "shot4" : "shot/shot4.png",
+
     "tankBase1" : "player/tankbase1.png",
     "tankBase2" : "player/tankbase2.png",
     "tankBase3" : "player/tankbase3.png",
@@ -118,17 +121,11 @@ function documentLoaded(cvs)
 function main()
 {
     log_message("Starting game");
-    function update(dt)
-    {
-	this.tm += dt;
-	this.x = 200+100*Math.sin(2*this.tm);
-	this.y = 300+100*Math.sin(1.5*this.tm);
-	//this.y += 500*dt;
-    }
 
     /* Construct the tileset */
     resources.tileset = new Tileset(resources.images.tiles, TILEW, TILEH);
 
+    /* TODO - create a loader for animations via JSON files */
     resources.shotFrames = [
 	resources.images.shot1,
 	resources.images.shot2,
@@ -152,18 +149,6 @@ function main()
     music = new AudioPool(resources.sounds.tunes);
     music.set_volume(0.4);
     //music.play();
-
-    //grp = new SpriteGroup();
-    //grp.add(player);
-
-/*    for (var n = 0; n < 15; n++) {
-	var spr = new Sprite();
-	spr.img = imageLoader.images.dot;
-	spr.update = update;
-	spr.y = 30+20*n;
-	spr.tm = n;
-	grp.add(spr);
-    }*/
 
     gameState = new GameStateMachine();
 

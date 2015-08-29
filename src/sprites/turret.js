@@ -78,3 +78,8 @@ Turret.prototype.spawn = function(level)
     /* Also make the turret (base) a valid target for the player */
     this.level.targets.add(this);
 }
+
+Turret.prototype.handle_shot_collision = function(shot)
+{
+    return true;
+}
