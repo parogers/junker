@@ -26,6 +26,7 @@ var UP = 38;
 var RIGHT = 39;
 var DOWN = 40;
 var FIRE = 65;
+var ESCAPE = 27;
 
 var TILEW = 16;
 var TILEH = 16;
@@ -64,8 +65,12 @@ var IMAGES = {
 };
 
 var AUDIO = {
-    "shot" : "shot1.wav",
-    "tunes" : "music.wav"};
+    "motorIdle" : "audio/motor-idle.wav",
+    "motorRun" : "audio/motor-run.wav",
+    "shot1" : "audio/shot1.wav",
+    "shot" : "audio/shot2.wav",
+    "tunes" : "audio/music.wav"
+};
 
 var gameState = null;
 var titleImage = null;
@@ -120,7 +125,7 @@ function documentLoaded(cvs)
  * like sounds and images have been loaded. */
 function main()
 {
-    log_message("Starting game");
+    log_message("*** Starting game");
 
     /* Construct the tileset */
     resources.tileset = new Tileset(resources.images.tiles, TILEW, TILEH);
@@ -143,11 +148,12 @@ function main()
 
     controls = new Controls();
 
-    shot = new AudioPool(resources.sounds.shot);
-    shot.set_volume(0.5);
+    resources.shotAudio = new AudioPool(resources.sounds.shot);
+    resources.shotAudio.set_volume(0.4);
 
+    /*
     music = new AudioPool(resources.sounds.tunes);
-    music.set_volume(0.4);
+    music.set_volume(0.4);*/
     //music.play();
 
     gameState = new GameStateMachine();

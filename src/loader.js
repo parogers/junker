@@ -26,7 +26,8 @@ function AudioLoader(basePath)
     this.remaining = {};
     this.onComplete = null;
 
-    this.handleSoundLoaded = function(src) {
+    this.handleSoundLoaded = function(src) 
+    {
 	delete this.remaining[src];
 	var remains = Object.keys(this.remaining).length;
 	console.log("loaded clip: " + src + ", " + remains + " left");
@@ -49,6 +50,9 @@ function AudioLoader(basePath)
 
 	    snd.oncanplaythrough = function(ldr, src) {
 		return function() {
+		    /* Remove the event handler so it's not called later. This
+		     * can happen in Firefox when an audio clip is looped */*/
+		    this.oncanplaythrough = undefined;
 		    ldr.handleSoundLoaded(src);
 		}
 	    }(this, src);
@@ -56,6 +60,8 @@ function AudioLoader(basePath)
 	    snd.onerror = function(ldr, src)
 	    {
 		return function() {
+		    /* Remove the event handler so it's not called later */
+		    this.onerror = undefined;
 		    return ldr.handleSoundFailed(src);
 		}
 	    }(this, src);
@@ -138,6 +144,8 @@ function Resources(basePath, imageList, audioList)
     this.audioList = audioList;
     this.tileset = null;
     this.level = null;
+    /* The Sound objects hashed by name */
+    this.sounds = null;
 
     this.load = function()
     {
@@ -150,6 +158,7 @@ function Resources(basePath, imageList, audioList)
 	imageLoader.onComplete = function(res, ldr) {
 	    return function() {
 		/* Now load the audio */
+		log_message("Images loaded");
 		res.images = ldr.images;
 		res._load_audio();
 	    }
@@ -162,6 +171,7 @@ function Resources(basePath, imageList, audioList)
 	var audioLoader = new AudioLoader(this.basePath);
 	audioLoader.onComplete = function(res, ldr) {
 	    return function() {
+		log_message("Audio loaded");
 		res.sounds = ldr.sounds;
 		if (res.onComplete != null)
 		    res.onComplete();

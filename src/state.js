@@ -87,6 +87,7 @@ function StateMachine(states)
 	    /* Already in this state */
 	    return;
 	}
+	log_message("Switching to state: " + next);
 	/* Leave the current state and enter into the next */
 	var state = this.get_state();
 	if (state && state.leave) state.leave();

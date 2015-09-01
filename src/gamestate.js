@@ -97,6 +97,9 @@ function GameStateMachine()
 	    leave : function() {
 		/* Switch back to the regular default cursor */
 		canvas.style.cursor = "auto";
+		/* Stop playing all audio */
+		resources.shotAudio.pause();
+		resources.sounds.motorIdle.pause();
 	    },
 	    update: function(dt) {
 		//resources.level.terrainView.ypos -= 100*dt;
@@ -108,7 +111,7 @@ function GameStateMachine()
 		{
 		case "keypress":
 		    var key = event.which || event.keyCode;
-		    if (key == 27) return "title";
+		    if (key == ESCAPE) return "title";
 		    break;
 
 		case "mousemove":

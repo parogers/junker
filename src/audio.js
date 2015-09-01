@@ -37,13 +37,23 @@ function AudioPool(audio, count)
     /* Plays the next audio clip in the managed pool */
     this.play = function()
     {
-	this.audioObjs[this.next].play();
+	var obj = this.audioObjs[this.next];
+	obj.play();
 	this.next = (this.next + 1) % this.audioObjs.length;
+	return obj;
     };
 
-    this.set_volume = function(vol) {
+    this.set_volume = function(vol) 
+    {
 	for (var n = 0; n < this.audioObjs.length; n++) {
 	    this.audioObjs[n].volume = vol;
+	}
+    }
+
+    this.pause = function() 
+    {
+	for (var n = 0; n < this.audioObjs.length; n++) {
+	    this.audioObjs[n].pause();
 	}
     }
 }

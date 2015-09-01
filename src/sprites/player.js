@@ -35,6 +35,7 @@ function Player()
     this.shotDelay = 0.3;
     /* Time until the player can shoot again */
     this.shotCooldown = 0;
+    this.motor = null;
 
     this.directions = [
 	[225, 270, -45], // north (west, NA, east)
@@ -117,14 +118,28 @@ Player.prototype.update = function(dt)
 	if (this.shotCooldown <= 0) 
 	{
 	    var shot = new Shot();
-	    shot.x = this.x;
-	    shot.y = this.y;
 	    var mag = Math.sqrt(dx*dx + dy*dy);
 	    shot.dirX = dx/mag;
 	    shot.dirY = dy/mag;
+	    shot.x = this.x + shot.dirX*15;
+	    shot.y = this.y + shot.dirY*15;
 	    shot.spawn(this.level);
 	    this.shotCooldown = this.shotDelay;
+	    resources.shotAudio.play();
 	}
+	//this.motor.pause();
+    }
+
+    if (!this.motor)
+    {
+	this.motor = resources.sounds.motorIdle;
+	this.motor.play();
+	this.motor.addEventListener("ended", (function(snd) {
+	    return function() {
+		snd.currentTime = 0;
+		snd.play();
+	    }
+	})(this.motor));
     }
 
     if (this.shotCooldown > 0) {
