@@ -36,7 +36,7 @@ function Level(tileset, rows, cols)
 	[this.groundTerr, this.midgroundTerr], 
 	canvas.width, canvas.height);
 
-    this.terrainView.xpos = 50;
+    this.terrainView.xpos = 15;
     this.terrainView.ypos = this.rows*TILEH*2-3.5*canvas.height;
 
     /* TODO - maintain a list of visible sprites to speed things up */
@@ -52,7 +52,7 @@ function Level(tileset, rows, cols)
     this.player = new Player();
     //this.player.controls = new Controls();
     //this.player.img = resources.images.dot2;
-    this.player.x = this.terrainView.xpos + 100;
+    this.player.x = this.terrainView.xpos + 150;
     this.player.y = this.terrainView.ypos + 200;
     this.player.level = this;
     this.player.spawn(this);
@@ -74,7 +74,7 @@ function Level(tileset, rows, cols)
     this.draw_frame = function(context)
     {
 	context.save();
-	//context.scale(2, 2);
+	//context.scale(1, 0.5);
 	try {
 	    this.terrainView.render(context, 0, 0);
 	    /* The sprite rendering code isn't aware of the terrain view, so

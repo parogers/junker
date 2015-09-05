@@ -33,6 +33,14 @@ var requestAnimFrame = (function() {
 	});
 })();
 
+/* Stop an event from propagating and triggering any browser default actions */
+function utils_stop_event(event)
+{
+    /* Use every known method for stopping the event */
+    if (event.preventDefault) event.preventDefault();
+    if (event.stopPropagation) event.stopPropagation();
+    event.cancelBubble = true;
+}
 
 /* Create an offscreen canvas for rendering the background */
 function create_tiled_background(img, width, height)

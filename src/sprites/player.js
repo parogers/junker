@@ -19,12 +19,14 @@
 
 /* player.js */
 
+var MOTOR_SOUNDS = false;
+
 function Player()
 {
     /* Constructor */
     Sprite.call(this);
 
-    this.speed = 100;
+    this.speed = 125;
     this.frames = [
 	resources.images.tankBase4,
 	resources.images.tankBase3,
@@ -35,7 +37,27 @@ function Player()
     this.shotDelay = 0.3;
     /* Time until the player can shoot again */
     this.shotCooldown = 0;
-    this.motor = null;
+
+    if (MOTOR_SOUNDS) 
+    {
+	this.motorIdle = resources.sounds.motorIdle;
+	this.motorIdle.paused = true;
+	this.motorIdle.volume = 0.5;
+	/* Have the idling sound loop when it needs to loop */
+	this.motorIdle.addEventListener("ended", function() {
+	    this.currentTime = 0;
+	});
+
+	this.motorRun = resources.sounds.motorRun;
+	this.motorRun.paused = true;
+	this.motorRun.volume = 0.5;
+	/* Have the motor sound loop */
+	this.motorRun.addEventListener("ended", function() {
+	    this.currentTime = 0;
+	});
+    }
+
+    this.moving = false;
 
     this.directions = [
 	[225, 270, -45], // north (west, NA, east)
@@ -85,8 +107,10 @@ Player.prototype.update = function(dt)
     }
 
     /* Check that the new position isn't blocked */
+    this.moving = false;
     if (mag > 0)
     {
+	this.moving = true;
 	if (this.check_passable(this.x+dx, this.y+dy)) {
 	    /* The way is clear */
 	    this.x += dx;
@@ -112,6 +136,7 @@ Player.prototype.update = function(dt)
     var dx = controls.cursorX - (this.x - this.level.terrainView.xpos);
     var dy = controls.cursorY - (this.y - this.level.terrainView.ypos);
     this.gunSprite.rotation = Math.atan2(dy, dx);;
+    //this.gunSprite.rotation = -Math.PI/2; //this.rotation;
 
     if (controls.fire)
     {
@@ -119,10 +144,10 @@ Player.prototype.update = function(dt)
 	{
 	    var shot = new Shot();
 	    var mag = Math.sqrt(dx*dx + dy*dy);
-	    shot.dirX = dx/mag;
-	    shot.dirY = dy/mag;
-	    shot.x = this.x + shot.dirX*15;
-	    shot.y = this.y + shot.dirY*15;
+	    shot.dirX = Math.cos(this.gunSprite.rotation);
+	    shot.dirY = Math.sin(this.gunSprite.rotation);
+	    shot.x = this.x + 15*shot.dirX;
+	    shot.y = this.y + 15*shot.dirY;
 	    shot.spawn(this.level);
 	    this.shotCooldown = this.shotDelay;
 	    resources.shotAudio.play();
@@ -130,16 +155,17 @@ Player.prototype.update = function(dt)
 	//this.motor.pause();
     }
 
-    if (!this.motor)
+    if (MOTOR_SOUNDS) 
     {
-	this.motor = resources.sounds.motorIdle;
-	this.motor.play();
-	this.motor.addEventListener("ended", (function(snd) {
-	    return function() {
-		snd.currentTime = 0;
-		snd.play();
-	    }
-	})(this.motor));
+	if (this.moving && this.motorRun.paused) {
+	    /* Start the motor running sound, stop the idling sound */
+	    this.motorIdle.pause();
+	    this.motorRun.play();
+	} else if (!this.moving && this.motorIdle.paused) {
+	    /* Start the idling sound, stop the motor running sound */
+	    this.motorIdle.play();
+	    this.motorRun.pause();
+	}
     }
 
     if (this.shotCooldown > 0) {

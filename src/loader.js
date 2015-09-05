@@ -51,7 +51,7 @@ function AudioLoader(basePath)
 	    snd.oncanplaythrough = function(ldr, src) {
 		return function() {
 		    /* Remove the event handler so it's not called later. This
-		     * can happen in Firefox when an audio clip is looped */*/
+		     * can happen in Firefox when an audio clip is looped */
 		    this.oncanplaythrough = undefined;
 		    ldr.handleSoundLoaded(src);
 		}

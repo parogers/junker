@@ -19,18 +19,6 @@
 
 /* main.js */
 
-var MIN_FPS = 10;
-
-var LEFT = 37;
-var UP = 38;
-var RIGHT = 39;
-var DOWN = 40;
-var FIRE = 65;
-var ESCAPE = 27;
-
-var TILEW = 16;
-var TILEH = 16;
-
 /* TODO - put this into a JSON config file */
 var IMAGES = {
     "dot" : "image.png", 
@@ -65,8 +53,8 @@ var IMAGES = {
 };
 
 var AUDIO = {
-    "motorIdle" : "audio/motor-idle.wav",
-    "motorRun" : "audio/motor-run.wav",
+    "motorIdle" : "audio/motor-idle.ogg",
+    "motorRun" : "audio/motor-run.ogg",
     "shot1" : "audio/shot1.wav",
     "shot" : "audio/shot2.wav",
     "tunes" : "audio/music.wav"
@@ -160,6 +148,7 @@ function main()
 
     cb = function(ev) {
 	gameState.handle_event(ev);
+	return false;
     }
 
     canvas.addEventListener("mousemove", cb, true);

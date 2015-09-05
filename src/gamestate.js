@@ -37,7 +37,7 @@ function GameStateMachine()
 	    },
 	    handle_event: function(event) {
 		/* Waiting for the user to mouse click or press a key */
-		if (event.type === "mousedown" || event.type === "keypress") {
+		if (event.type === "mousedown" || event.type === "keydown") {
 		    //return "startFadeOut";
 		    return "loadLevel";
 		}
@@ -111,7 +111,13 @@ function GameStateMachine()
 		{
 		case "keypress":
 		    var key = event.which || event.keyCode;
-		    if (key == ESCAPE) return "title";
+
+		    /* Let the user refresh the page */
+		    if ((key === R_KEY || key == LOWER_R_KEY) &&
+			event.ctrlKey === true || key == F5_KEY) {
+			return;
+		    }
+		    utils_stop_event(event);
 		    break;
 
 		case "mousemove":
@@ -130,14 +136,21 @@ function GameStateMachine()
 		    break;
 
 		case "keydown":
-		    /* TODO - test this on chrome and IE8- */
 		    var key = event.which || event.keyCode;
+		    /* Return to the title screen. We handle the escape key
+		     * here because it works in both Chrome and Firefox */
+		    if (key === ESCAPE) return "title";
+		    /* Handle the arcade controls */
 		    if (key == UP) controls.up = true;
 		    else if (key == DOWN) controls.down = true;
 		    else if (key == LEFT) controls.left = true;
 		    else if (key == RIGHT) controls.right = true;
 		    else if (key == FIRE) controls.fire = true;
-		    event.stopPropagation();
+		    else break;
+		    /* If we've handled the key press above, stop the event
+		     * now to prevent unwanted side effects from the browser
+		     * handling the event. (eg scrolling the window) */
+		    utils_stop_event(event);
 		    break;
 
 		case "keyup":
@@ -147,7 +160,11 @@ function GameStateMachine()
 		    else if (key == LEFT) controls.left = false;
 		    else if (key == RIGHT) controls.right = false;
 		    else if (key == FIRE) controls.fire = false;
-		    event.stopPropagation();
+		    else break;
+		    /* If we've handled the key press above, stop the event
+		     * now to prevent unwanted side effects from the browser
+		     * handling the event. (eg scrolling the window) */
+		    utils_stop_event(event);
 		    break;
 
 		}

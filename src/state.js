@@ -38,6 +38,7 @@ function StateMachine(states)
 	    var next = this.get_state().handle_event(event);
 	    if (next) this.change_state(next);
 	}
+	return false;
     }
 
     this.draw_frame = function()

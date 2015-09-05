@@ -24,7 +24,7 @@ function Shot()
     /* Constructor */
     Sprite.call(this);
 
-    this.speed = 300;
+    this.speed = 500;
     this.dirX = 0;
     this.dirY = 0;
     this.frame = 0;
