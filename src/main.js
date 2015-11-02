@@ -45,6 +45,13 @@ var IMAGES = {
     "explode5" : "explosion/explode5.png",
     "explode6" : "explosion/explode6.png",
 
+    "big_explode1" : "big-explosion/explode1.png",
+    "big_explode2" : "big-explosion/explode2.png",
+    "big_explode3" : "big-explosion/explode3.png",
+    "big_explode4" : "big-explosion/explode4.png",
+    "big_explode5" : "big-explosion/explode5.png",
+    "big_explode6" : "big-explosion/explode6.png",
+
     "tankWater" : "player/tankbase-water.png",
     "tankGun" : "player/tank-gun.png",
     "turretBase" : "turret/turret-base.png",
@@ -56,8 +63,15 @@ var AUDIO = {
     "motorIdle" : "audio/motor-idle.ogg",
     "motorRun" : "audio/motor-run.ogg",
     "shot1" : "audio/shot1.wav",
-    "shot" : "audio/shot2.wav",
-    "tunes" : "audio/music.wav"
+    "shot2" : "audio/shot2.wav",
+    "shot3" : "audio/shot3.wav",
+    "shot4" : "audio/shot4.wav",
+    "hit1" : "audio/hit1.wav",
+    "explode1" : "audio/explode1.wav",
+    "explode2" : "audio/explode2.wav",
+    /*"music" : "audio/manoeuvre_0.ogg",*/
+    "splash" : "audio/splash.wav",
+    "rumble" : "audio/rumble.wav",
 };
 
 var gameState = null;
@@ -79,6 +93,7 @@ function Controls()
     this.left = false;
     this.right = false;
     this.fire = false;
+    this.secondary = false;
     this.cursorX = 0;
     this.cursorY = 0;
 }
@@ -134,14 +149,40 @@ function main()
 	resources.images.explode6
     ];
 
+    resources.bigExplosionFrames = [
+	resources.images.big_explode1,
+	resources.images.big_explode2,
+	resources.images.big_explode3,
+	resources.images.big_explode4,
+	resources.images.big_explode5,
+	resources.images.big_explode6
+    ];
+
     controls = new Controls();
 
-    resources.shotAudio = new AudioPool(resources.sounds.shot);
+    resources.shotAudio = new AudioPool(resources.sounds.shot2);
     resources.shotAudio.set_volume(0.4);
 
-    /*
-    music = new AudioPool(resources.sounds.tunes);
-    music.set_volume(0.4);*/
+    resources.turretShotAudio = new AudioPool(resources.sounds.shot3);
+    resources.turretShotAudio.set_volume(0.2);
+
+    resources.bombShotAudio = new AudioPool(resources.sounds.shot4);
+    resources.bombShotAudio.set_volume(0.2);
+
+    resources.explodeAudio = new AudioPool(resources.sounds.explode1);
+    resources.explodeAudio.set_volume(0.3);
+
+    resources.splashAudio = new AudioPool(resources.sounds.splash);
+    resources.splashAudio.set_volume(0.4);
+
+    resources.rumbleAudio = new AudioPool(resources.sounds.rumble);
+    resources.rumbleAudio.set_volume(0.3);
+
+    //resources.explodeTurretAudio = new AudioPool(resources.sounds.explode1);
+    //resources.explodeTurretAudio.set_volume(0.2);
+
+    //music = new AudioPool(resources.sounds.music);
+    //music.set_volume(0.3);
     //music.play();
 
     gameState = new GameStateMachine();
@@ -157,6 +198,14 @@ function main()
     canvas.addEventListener("keypress", cb, true);
     canvas.addEventListener("keydown", cb, true);
     canvas.addEventListener("keyup", cb, true);
+
+    /* Disable the content menu popup when the players clicks with the
+     * right mouse button. */
+    cb = function(ev) {
+	utils_stop_event(ev);
+	return false;
+    }
+    canvas.addEventListener("contextmenu", cb, true);
 
     gameState.change_state("title");
     gameState.draw_frame();

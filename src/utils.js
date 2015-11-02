@@ -19,6 +19,10 @@
 
 /* utils.js */
 
+MOUSE_LEFT = 0
+MOUSE_MIDDLE = 1
+MOUSE_RIGHT = 2
+
 /* Cross platform way of requesting an animation update
  * (see http://jlongster.com/Making-Sprite-based-Games-with-Canvas) */
 var requestAnimFrame = (function() {

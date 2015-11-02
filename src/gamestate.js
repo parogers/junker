@@ -113,8 +113,8 @@ function GameStateMachine()
 		    var key = event.which || event.keyCode;
 
 		    /* Let the user refresh the page */
-		    if ((key === R_KEY || key == LOWER_R_KEY) &&
-			event.ctrlKey === true || key == F5_KEY) {
+		    if ((key === R_KEY || key === LOWER_R_KEY) &&
+			event.ctrlKey || key === F5_KEY) {
 			return;
 		    }
 		    utils_stop_event(event);
@@ -128,11 +128,19 @@ function GameStateMachine()
 		    break;
 
 		case "mousedown":
-		    controls.fire = true;
+		    if (event.button == MOUSE_LEFT) {
+			controls.fire = true;
+		    } else if (event.button == MOUSE_RIGHT) {
+			controls.secondary = true;
+		    }
 		    break;
 
 		case "mouseup":
-		    controls.fire = false;
+		    if (event.button == MOUSE_LEFT) {
+			controls.fire = false;
+		    } else if (event.button == MOUSE_RIGHT) {
+			controls.secondary = false;
+		    }
 		    break;
 
 		case "keydown":
@@ -141,11 +149,11 @@ function GameStateMachine()
 		     * here because it works in both Chrome and Firefox */
 		    if (key === ESCAPE) return "title";
 		    /* Handle the arcade controls */
-		    if (key == UP) controls.up = true;
-		    else if (key == DOWN) controls.down = true;
-		    else if (key == LEFT) controls.left = true;
-		    else if (key == RIGHT) controls.right = true;
-		    else if (key == FIRE) controls.fire = true;
+		    if (key === UP) controls.up = true;
+		    else if (key === DOWN) controls.down = true;
+		    else if (key === LEFT) controls.left = true;
+		    else if (key === RIGHT) controls.right = true;
+		    else if (key === FIRE) controls.fire = true;
 		    else break;
 		    /* If we've handled the key press above, stop the event
 		     * now to prevent unwanted side effects from the browser
@@ -155,11 +163,11 @@ function GameStateMachine()
 
 		case "keyup":
 		    var key = event.which || event.keyCode;
-		    if (key == UP) controls.up = false;
-		    else if (key == DOWN) controls.down = false;
-		    else if (key == LEFT) controls.left = false;
-		    else if (key == RIGHT) controls.right = false;
-		    else if (key == FIRE) controls.fire = false;
+		    if (key === UP) controls.up = false;
+		    else if (key === DOWN) controls.down = false;
+		    else if (key === LEFT) controls.left = false;
+		    else if (key === RIGHT) controls.right = false;
+		    else if (key === FIRE) controls.fire = false;
 		    else break;
 		    /* If we've handled the key press above, stop the event
 		     * now to prevent unwanted side effects from the browser

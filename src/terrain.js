@@ -211,10 +211,11 @@ function Terrain(tileset, layer, base) {
 
     this.update = function() 
     {
-	if (this.dirty === false) {
+	if (!this.dirty) {
 	    return;
 	}
-	this.dirty = true;
+	this.dirty = false;
+	log_message("updating terrain mapping");
 
 	var row=0, col=0;
 	var neTile, nwTile, seTile, swTile;

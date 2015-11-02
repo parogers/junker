@@ -29,7 +29,9 @@ function Turret()
      * to 'update' below. */
     this.gunSprite = null;
     /* Maximum number of shots per second */
-    this.firingRate = 1;
+    this.firingRate = 1.25+0.5*Math.random();
+    this.health = 3;
+    this.explodeTimer = 0;
     /* Cooldown counter between shots (calculate from the rate and 
      * decremented in 'update') */
     this.cooldown = 0;
@@ -47,6 +49,22 @@ Turret.prototype.update = function(dt)
 
     //this.gunSprite.rotation += 3*dt;
 
+    if (this.explodeTimer > 0) 
+    {
+	this.explodeTimer -= dt;
+	if (this.explodeTimer <= 0) 
+	{
+	    this.level.remove_sprite(this.gunSprite);
+	    this.level.remove_sprite(this);
+	    return;
+	}
+    }
+
+    if (!this.level.check_pos_visible(this.x, this.y))
+    {
+	return;
+    }
+
     /* Aim the barrel towards the player, if they're close enough */
     /* ... */
     this.tracking = true;
@@ -54,10 +72,25 @@ Turret.prototype.update = function(dt)
     /* Periodically shoot at the player */
     if (this.tracking) 
     {
+	/* Aim the gun at the player */
+	var dx = (this.level.player.x - this.x);
+	var dy = (this.level.player.y - this.y);
+	this.gunSprite.rotation = Math.atan2(dy, dx);;
+
 	this.cooldown -= dt;
 	if (this.cooldown <= 0) {
 	    /* Ready to fire another shot */
 	    this.cooldown = 1.0 / this.firingRate;
+
+	    var shot = new Shot(this);
+	    var mag = Math.sqrt(dx*dx + dy*dy);
+	    shot.dirX = Math.cos(this.gunSprite.rotation);
+	    shot.dirY = Math.sin(this.gunSprite.rotation);
+	    shot.x = this.x + 15*shot.dirX;
+	    shot.y = this.y + 15*shot.dirY;
+	    shot.spawn(this.level);
+	    this.shotCooldown = this.shotDelay;
+	    resources.turretShotAudio.play();
 	}
     }
 }
@@ -81,5 +114,13 @@ Turret.prototype.spawn = function(level)
 
 Turret.prototype.handle_shot_collision = function(shot)
 {
+    this.health--;
+    if (this.health <= 0) {
+	//resources.explodeTurretAudio.play();
+	var exp = new BigExplosion(this.x, this.y);
+	exp.fps = 15;
+	exp.spawn(this.level);
+	this.explodeTimer = 0.1;
+    }
     return true;
 }

@@ -67,6 +67,14 @@ Sprite.prototype.update = function(dt)
 {
 }
 
+Sprite.prototype.check_collision = function(x, y)
+{
+    return (x >= this.x - this.offsetX && 
+	    y >= this.y - this.offsetY &&
+	    x < this.x - this.offsetX + this.width() &&
+	    y < this.y - this.offsetY + this.height());
+}
+
 /* SpriteGroup */
 function SpriteGroup() {
     this.sprites = {};
@@ -179,14 +187,9 @@ SpriteGroup.prototype.check_collision = function(x, y)
     var sprite = null;
     for (var id in this.sprites) 
     {
-	sprite = this.sprites[id]
-	if (x >= sprite.x - sprite.offsetX && 
-	    y >= sprite.y - sprite.offsetY &&
-	    x < sprite.x - sprite.offsetX + sprite.width() &&
-	    y < sprite.y - sprite.offsetY + sprite.height()) 
-	{
-	    return sprite;
+	if (this.sprites[id].check_collision(x, y)) {
+	    return this.sprites[id];
 	}
-    }
+   }
     return null;
 }

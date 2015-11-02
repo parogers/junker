@@ -151,6 +151,8 @@ function parse_level(data)
 		data["terrains"][midground[row][col]]];
 	}
     }
+    level.groundTerr.dirty = true;
+    level.midgroundTerr.dirty = true;
 
     for (var n = 0; n < enemies.length; n++) 
     {

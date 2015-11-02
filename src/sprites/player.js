@@ -19,13 +19,14 @@
 
 /* player.js */
 
-var MOTOR_SOUNDS = false;
+var MOTOR_SOUNDS = true;
 
 function Player()
 {
     /* Constructor */
     Sprite.call(this);
 
+    this.slowDown = 0;
     this.speed = 125;
     this.frames = [
 	resources.images.tankBase4,
@@ -37,6 +38,8 @@ function Player()
     this.shotDelay = 0.3;
     /* Time until the player can shoot again */
     this.shotCooldown = 0;
+    /* Whether the player tank is currently in water */
+    this.inWater = false;
 
     if (MOTOR_SOUNDS) 
     {
@@ -77,10 +80,10 @@ Player.prototype.check_passable = function(x, y)
     var col = (x/(2*TILEW))|0;
     if (row >= 0 && row < this.level.ground.rows &&
 	col >= 0 && col < this.level.ground.cols) {
-	return ((this.level.ground[row][col] == DIRT ||
-		 this.level.ground[row][col] == GRASS ||
-		 this.level.ground[row][col] == WATER) &&
-	    	this.level.midground[row][col] == NOTHING);
+	return ((this.level.ground[row][col] === DIRT ||
+		 this.level.ground[row][col] === GRASS ||
+		 this.level.ground[row][col] === WATER) &&
+	    	this.level.midground[row][col] === NOTHING);
     }
     return false;
 }
@@ -104,6 +107,12 @@ Player.prototype.update = function(dt)
     if (mag > 0) {
 	dx *= this.speed*dt/mag;
 	dy *= this.speed*dt/mag;
+
+	if (this.inWater) {
+	    /* Move a little slower while in water */
+	    dx *= 0.75;
+	    dy *= 0.75;
+	}
     }
 
     /* Check that the new position isn't blocked */
@@ -123,10 +132,24 @@ Player.prototype.update = function(dt)
 	    this.x += dx;
 	}
 
+	/* Check if the tank has entered into water */
 	var terr = this.level.get_ground_terrain(this.x, this.y);
-	if (terr == WATER) {
+	if (terr === WATER) {
+	    /* If the tank has just moved into water play the splash sound */
+	    if (!this.inWater) {
+		resources.splashAudio.play();
+		this.slowDown = 0.5;
+	    }
+	    this.inWater = true;
 	    this.img = resources.images.tankWater;
 	} else {
+	    /* If tank has just moved out of water play the climbing sound */
+	    if (this.inWater) {
+		resources.rumbleAudio.play();
+		this.slowDown = 0.5;
+	    }
+
+	    this.inWater = false;
 	    this.frame = (this.frame + 15*dt) % this.frames.length;
 	    this.img = this.frames[this.frame|0];
 	}
@@ -135,14 +158,14 @@ Player.prototype.update = function(dt)
     /* Aim the gun at the mouse cursor */
     var dx = controls.cursorX - (this.x - this.level.terrainView.xpos);
     var dy = controls.cursorY - (this.y - this.level.terrainView.ypos);
-    this.gunSprite.rotation = Math.atan2(dy, dx);;
+    this.gunSprite.rotation = Math.atan2(dy, dx);
     //this.gunSprite.rotation = -Math.PI/2; //this.rotation;
 
     if (controls.fire)
     {
 	if (this.shotCooldown <= 0) 
 	{
-	    var shot = new Shot();
+	    var shot = new Shot(this);
 	    var mag = Math.sqrt(dx*dx + dy*dy);
 	    shot.dirX = Math.cos(this.gunSprite.rotation);
 	    shot.dirY = Math.sin(this.gunSprite.rotation);
@@ -155,15 +178,32 @@ Player.prototype.update = function(dt)
 	//this.motor.pause();
     }
 
+    if (controls.secondary)
+    {
+	if (this.shotCooldown <= 0) 
+	{
+	    var shot = new Shot(this);
+	    var mag = Math.sqrt(dx*dx + dy*dy);
+	    shot.dirX = Math.cos(this.gunSprite.rotation);
+	    shot.dirY = Math.sin(this.gunSprite.rotation);
+	    shot.x = this.x + 15*shot.dirX;
+	    shot.y = this.y + 15*shot.dirY;
+	    shot.spawn(this.level);
+	    this.shotCooldown = this.shotDelay;
+	    resources.bombShotAudio.play();
+	}
+	//this.motor.pause();
+    }
+
     if (MOTOR_SOUNDS) 
     {
 	if (this.moving && this.motorRun.paused) {
 	    /* Start the motor running sound, stop the idling sound */
-	    this.motorIdle.pause();
+	    //this.motorIdle.pause();
 	    this.motorRun.play();
 	} else if (!this.moving && this.motorIdle.paused) {
 	    /* Start the idling sound, stop the motor running sound */
-	    this.motorIdle.play();
+	    //this.motorIdle.play();
 	    this.motorRun.pause();
 	}
     }
@@ -184,4 +224,17 @@ Player.prototype.spawn = function(level)
     this.gunSprite = new Sprite(resources.images.tankGun);
     this.level.middleSprites.add(this.gunSprite);
     this.level.groundSprites.add(this);
+}
+
+Player.prototype.handle_shot_collision = function(shot)
+{
+/*    this.health--;
+    if (this.health <= 0) {
+	//resources.explodeTurretAudio.play();
+	var exp = new BigExplosion(this.x, this.y);
+	exp.fps = 15;
+	exp.spawn(this.level);
+	this.explodeTimer = 0.1;
+    }*/
+    return true;
 }

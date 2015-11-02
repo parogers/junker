@@ -19,33 +19,49 @@
 
 /* explosion.js */
 
-function Explosion()
+function ExplosionBase(frames, x, y)
 {
     /* Constructor */
     Sprite.call(this);
 
+    this.explosionFrames = frames;
     this.fps = 25;
     this.frame = 0;
+    this.x = x;
+    this.y = y;
 }
 
-Explosion.prototype = new Sprite;
+ExplosionBase.prototype = new Sprite;
 
-Explosion.prototype.spawn = function(level)
+ExplosionBase.prototype.spawn = function(level)
 {
-    this.set_image(resources.explosionFrames[0]);
+    this.set_image(this.explosionFrames[0]);
     this.level = level;
     this.level.airSprites.add(this);
 }
 
-Explosion.prototype.update = function(dt)
+ExplosionBase.prototype.update = function(dt)
 {
     /* Update the animation frame */
-    this.img = resources.explosionFrames[this.frame|0];
-
+    this.img = this.explosionFrames[this.frame|0];
     this.frame += this.fps*dt;
-    if ((this.frame|0) >= resources.explosionFrames.length)
+    if ((this.frame|0) >= this.explosionFrames.length)
     {
 	this.level.remove_sprite(this);
 	return;
     }
 }
+
+function Explosion(x, y)
+{
+    ExplosionBase.call(this, resources.explosionFrames, x, y);
+}
+
+Explosion.prototype = ExplosionBase.prototype;
+
+function BigExplosion(x, y)
+{
+    ExplosionBase.call(this, resources.bigExplosionFrames, x, y);
+}
+
+BigExplosion.prototype = ExplosionBase.prototype;

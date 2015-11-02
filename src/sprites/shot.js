@@ -19,11 +19,12 @@
 
 /* shot.js */
 
-function Shot()
+function Shot(owner)
 {
     /* Constructor */
     Sprite.call(this);
 
+    this.owner = owner;
     this.speed = 500;
     this.dirX = 0;
     this.dirY = 0;
@@ -47,20 +48,29 @@ Shot.prototype.update = function(dt)
     this.frame = (this.frame + 15*dt) % resources.shotFrames.length;
     this.img = resources.shotFrames[this.frame|0];
 
-    /* Check for a collision with an enemy */
-    var collide = this.level.targets.check_collision(this.x, this.y);
-    if (collide) 
+    var collide = null;
+    if (this.owner === this.level.player)
     {
-	if (collide.handle_shot_collision && 
-	    collide.handle_shot_collision(this))
-	{
-	    /* The shot collided with the sprite so have it explode */
-	    this.level.remove_sprite(this);
-	    var exp = new Explosion();
-	    exp.x = this.x;
-	    exp.y = this.y;
-	    exp.spawn(this.level);
+	/* Check for a collision with an enemy */
+	collide = this.level.targets.check_collision(this.x, this.y);
+    } 
+    else 
+    {
+	/* Otherwise this is a bullet from an enemy. Check for a collision
+	 * with the player. */
+	if (this.level.player.check_collision(this.x, this.y)) {
+	    collide = this.level.player;
 	}
+    }
+
+    if (collide && collide.handle_shot_collision && 
+	collide.handle_shot_collision(this))
+    {
+	/* The shot collided with the sprite so have it explode */
+	this.level.remove_sprite(this);
+	var exp = new Explosion(this.x, this.y);
+	exp.spawn(this.level);
+	resources.explodeAudio.play();
     }
 
     /* Remove the shot when it's no longer on screen */
