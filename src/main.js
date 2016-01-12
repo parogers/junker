@@ -33,6 +33,10 @@ var IMAGES = {
     "shot3" : "shot/shot3.png",
     "shot4" : "shot/shot4.png",
 
+    "bomb1" : "bomb/bomb1.png",
+    "bomb2" : "bomb/bomb2.png",
+    "bomb3" : "bomb/bomb3.png",
+
     "tankBase1" : "player/tankbase1.png",
     "tankBase2" : "player/tankbase2.png",
     "tankBase3" : "player/tankbase3.png",
@@ -69,6 +73,7 @@ var AUDIO = {
     "hit1" : "audio/hit1.wav",
     "explode1" : "audio/explode1.wav",
     "explode2" : "audio/explode2.wav",
+    "explode3" : "audio/explode3.wav",
     /*"music" : "audio/manoeuvre_0.ogg",*/
     "splash" : "audio/splash.wav",
     "rumble" : "audio/rumble.wav",
@@ -177,6 +182,9 @@ function main()
 
     resources.rumbleAudio = new AudioPool(resources.sounds.rumble);
     resources.rumbleAudio.set_volume(0.3);
+
+    resources.bombAudio = new AudioPool(resources.sounds.explode3);
+    resources.bombAudio.set_volume(0.4);
 
     //resources.explodeTurretAudio = new AudioPool(resources.sounds.explode1);
     //resources.explodeTurretAudio.set_volume(0.2);

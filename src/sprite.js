@@ -86,7 +86,7 @@ SpriteGroup.prototype.render = function(context, clipx1, clipy1, clipx2, clipy2)
     {
 	var sprite = this.sprites[id];
 	if (sprite.x < clipx1 || sprite.y < clipy1 ||
-	    sprite.x > clipx2 || sprite.y > clipy2) {
+	    sprite.x > clipx2 || sprite.y > clipy2 || !sprite.img) {
 	    continue;
 	}
 

@@ -26,6 +26,7 @@ function Player()
     /* Constructor */
     Sprite.call(this);
 
+    this.barrelLength = 15;
     this.slowDown = 0;
     this.speed = 125;
     this.frames = [
@@ -159,6 +160,9 @@ Player.prototype.update = function(dt)
     var dx = controls.cursorX - (this.x - this.level.terrainView.xpos);
     var dy = controls.cursorY - (this.y - this.level.terrainView.ypos);
     this.gunSprite.rotation = Math.atan2(dy, dx);
+    var mag = Math.sqrt(dx*dx + dy*dy);
+    dx = dx / mag;
+    dy = dy / mag;
     //this.gunSprite.rotation = -Math.PI/2; //this.rotation;
 
     if (controls.fire)
@@ -166,11 +170,10 @@ Player.prototype.update = function(dt)
 	if (this.shotCooldown <= 0) 
 	{
 	    var shot = new Shot(this);
-	    var mag = Math.sqrt(dx*dx + dy*dy);
-	    shot.dirX = Math.cos(this.gunSprite.rotation);
-	    shot.dirY = Math.sin(this.gunSprite.rotation);
-	    shot.x = this.x + 15*shot.dirX;
-	    shot.y = this.y + 15*shot.dirY;
+	    shot.dirX = dx; //Math.cos(this.gunSprite.rotation);
+	    shot.dirY = dy; //Math.sin(this.gunSprite.rotation);
+	    shot.x = this.x + this.barrelLength*shot.dirX;
+	    shot.y = this.y + this.barrelLength*shot.dirY;
 	    shot.spawn(this.level);
 	    this.shotCooldown = this.shotDelay;
 	    resources.shotAudio.play();
@@ -182,12 +185,11 @@ Player.prototype.update = function(dt)
     {
 	if (this.shotCooldown <= 0) 
 	{
-	    var shot = new Shot(this);
-	    var mag = Math.sqrt(dx*dx + dy*dy);
-	    shot.dirX = Math.cos(this.gunSprite.rotation);
-	    shot.dirY = Math.sin(this.gunSprite.rotation);
-	    shot.x = this.x + 15*shot.dirX;
-	    shot.y = this.y + 15*shot.dirY;
+	    var shot = new Bomb(
+		this.x + this.barrelLength*dx,
+		this.y + this.barrelLength*dy,
+		controls.cursorX + this.level.terrainView.xpos,
+		controls.cursorY + this.level.terrainView.ypos);
 	    shot.spawn(this.level);
 	    this.shotCooldown = this.shotDelay;
 	    resources.bombShotAudio.play();

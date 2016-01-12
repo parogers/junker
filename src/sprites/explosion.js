@@ -52,6 +52,10 @@ ExplosionBase.prototype.update = function(dt)
     }
 }
 
+/*************/
+/* Explosion */
+/*************/
+
 function Explosion(x, y)
 {
     ExplosionBase.call(this, resources.explosionFrames, x, y);
@@ -59,9 +63,74 @@ function Explosion(x, y)
 
 Explosion.prototype = ExplosionBase.prototype;
 
+/****************/
+/* BigExplosion */
+/****************/
+
 function BigExplosion(x, y)
 {
     ExplosionBase.call(this, resources.bigExplosionFrames, x, y);
 }
 
 BigExplosion.prototype = ExplosionBase.prototype;
+
+/******************/
+/* MultiExplosion */
+/******************/
+
+function MultiExplosion(x, y, radius, duration)
+{
+    Sprite.call(this);
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.duration = duration;
+    this.time = 0;
+    this.period = 0.05;
+    this.counter = 0;
+}
+
+MultiExplosion.prototype = new Sprite;
+
+MultiExplosion.prototype.spawn = function(level)
+{
+    this.level = level;
+    this.level.airSprites.add(this);
+    //this.set_image(resources.bigExplosionFrames[1]);
+    resources.bombAudio.play();
+
+    for (var id in this.level.targets.sprites)
+    {
+	var sprite = this.level.targets.sprites[id];
+	if (Math.abs(sprite.x - this.x) < this.radius &&
+	    Math.abs(sprite.y - this.y) < this.radius) 
+	{
+	    sprite.handle_shot_collision(this);
+	    sprite.handle_shot_collision(this);
+	    sprite.handle_shot_collision(this);
+	}
+    }
+}
+
+MultiExplosion.prototype.update = function(dt)
+{
+    this.time += dt;
+    if (this.time > this.duration) 
+    {
+	/* Don't spawn any more explosions */
+	this.level.remove_sprite(this);
+	return;
+    }
+
+    this.counter -= dt;
+    if (this.counter <= 0) 
+    {
+	var px = 2*(Math.random()-0.5);
+	var py = 2*(Math.random()-0.5);
+	var exp = new BigExplosion(
+	    this.x + px * this.radius, 
+	    this.y + py * this.radius);
+	exp.spawn(this.level);
+	this.counter = this.period;
+    }
+}
