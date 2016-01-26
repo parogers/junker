@@ -81,10 +81,8 @@ Player.prototype.check_passable = function(x, y)
     var col = (x/(2*TILEW))|0;
     if (row >= 0 && row < this.level.ground.rows &&
 	col >= 0 && col < this.level.ground.cols) {
-	return ((this.level.ground[row][col] === DIRT ||
-		 this.level.ground[row][col] === GRASS ||
-		 this.level.ground[row][col] === WATER) &&
-	    	this.level.midground[row][col] === NOTHING);
+	return (!(this.level.ground[row][col] & TERRAIN_META_BLOCKED) && 
+		!(this.level.midground[row][col] & TERRAIN_META_BLOCKED));
     }
     return false;
 }

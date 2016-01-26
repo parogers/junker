@@ -34,10 +34,13 @@ var RIGHT = 68;
 var DOWN = 83;
 
 var FIRE = 32;
-var ESCAPE = 27;
 var R_KEY = 82;
 var LOWER_R_KEY = 114;
 var F5_KEY = 116;
+
+var ESCAPE = 27;
+var CONTROL = 17;
+var ALT = 18;
 
 var TILEW = 16;
 var TILEH = 16;

@@ -129,52 +129,6 @@ function Level(tileset, rows, cols)
     }
 }
 
-/* Takes a chunk of JSON type data and returns a Level object */
-function parse_level(data)
-{
-    var enemies = data["enemies"];
-    var ground = data["ground"];
-    var midground = data["midground"];
-    var cols = ground[0].length;
-    var rows = ground.length;
-
-    var level = new Level(resources.tileset, rows, cols);
-    for (var row = 0; row < rows; row++) {
-	for (var col = 0; col < cols; col++) {
-	    /* Map the terrain number (used in the JSON file) to the
-	     * terrain name, then to the terrain number used by the
-	     * game engine. */
-	    level.ground[row][col] = TERRAIN_NAME_MAPPING[
-		data["terrains"][ground[row][col]]];
-
-	    level.midground[row][col] = TERRAIN_NAME_MAPPING[
-		data["terrains"][midground[row][col]]];
-	}
-    }
-    level.groundTerr.dirty = true;
-    level.midgroundTerr.dirty = true;
-
-    for (var n = 0; n < enemies.length; n++) 
-    {
-	var type = enemies[n][0];
-	var x = enemies[n][1];
-	var y = enemies[n][2];
-
-	if (type === "turret") 
-	{
-	    var e = new Turret();
-	    e.level = level;
-	    //e.set_image(resources.images.turretBase);
-	    e.x = 2*TILEW*x + TILEW;
-	    e.y = 2*TILEH*y + TILEH;
-	    /* The turret base sits on the ground */
-	    e.spawn(level);
-	}
-    }
-
-    return level;
-}
-
 function generate_level(tileset, rows, cols)
 {
     var level = new Level(tileset, rows, cols);

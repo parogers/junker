@@ -38,6 +38,10 @@ function GameStateMachine()
 	    handle_event: function(event) {
 		/* Waiting for the user to mouse click or press a key */
 		if (event.type === "mousedown" || event.type === "keydown") {
+		    var key = event.which || event.keyCode;
+		    /* Press the control or alt key alone doesn't start 
+		     * the game */
+		    if (key == CONTROL || key == ALT) return;
 		    //return "startFadeOut";
 		    return "loadLevel";
 		}
@@ -70,15 +74,16 @@ function GameStateMachine()
 	/* Loading the level before starting gameplay */
 	loadLevel: {
 	    enter: function() {
-		/* Load the level JSON file */
-		$.getJSON("levels/out.json", function(data) {
+		/* Load the game level via callback */
+		resources.load_level("levels/out.json", function(level) {
 		    /* TODO - find a better place to store this */
-		    resources.level = parse_level(data);
+		    resources.level = level;
 
 		}).fail(function(obj, err, msg) {
 		    alert("Failed to load level: " + msg);
 
 		});
+
 	    },
 	    update: function() {
 		/* Waiting for the above code to load the level */

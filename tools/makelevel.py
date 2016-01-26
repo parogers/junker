@@ -28,22 +28,17 @@ import sys
 import PIL, PIL.Image
 import json
 
-import imposition
-
-TILE_MAPPING = {
-    (0,0,0) : "-",
-    (0,255,0) : "grass",
-    (0,0,255) : "water",
-    (0,0,200) : "sea",
-    (128,128,128) : "road",
-    (255,255,0) : "dirt",
-    (0,128,0) : "trees",
-    (128,128,128) : "stone",
-    (80,80,80) : "wall",
-    }
-
-# Come up with a mapping for terrain name to number
-TERRAIN_NAMES = list(sorted(TILE_MAPPING.values()))
+#TILE_MAPPING = {
+#    (0,0,0) : "-",
+#    (0,255,0) : "grass",
+#    (0,0,255) : "water",
+#    (0,0,200) : "sea",
+#    (128,128,128) : "road",
+#    (255,255,0) : "dirt",
+#    (0,128,0) : "trees",
+#    (128,128,128) : "stone",
+#    (80,80,80) : "wall",
+#    }
 
 def extract_level_info(src):
     # Extract the comment (contains extra level info)
@@ -54,16 +49,19 @@ def extract_level_info(src):
 
 def extract_layer(src, name):
     tmp = tempfile.NamedTemporaryFile(suffix=".png")
-    proc = subprocess.Popen(
-        ["xcf2png", src, name, "-o", tmp.name],
-        stderr=subprocess.PIPE)
+    try:
+        proc = subprocess.Popen(
+            ["xcf2png", src, name, "-o", tmp.name],
+            stderr=subprocess.PIPE)
+    except OSError,e:
+        raise Exception("Failed to run xcf2png (make sure it's installed): %s" % e)
     proc.wait()
 
     # Parse the image and generate a layer of terrain
     img = PIL.Image.open(tmp.name)
     return img
 
-def extract_terrain(src, name):
+def extract_terrain(src, name, tileMapping, terrainNames):
     img = extract_layer(src, name)
     (w, h) = img.size
     layer = []
@@ -71,8 +69,8 @@ def extract_terrain(src, name):
         layer.append([])
         for x in range(w):
             rgb = img.getpixel((x, y))[0:3]
-            terr = TILE_MAPPING[rgb]
-            layer[-1].append(TERRAIN_NAMES.index(terr))
+            terr = tileMapping[rgb]
+            layer[-1].append(terrainNames.index(terr))
     return layer
 
 def extract_enemies(src):
@@ -105,19 +103,35 @@ args = parser.parse_args(sys.argv[1:])
 src = args.src[0]
 dest = args.dest[0]
 
-# Extract level info from the XCF file
+# Extract level info from the XCF file (tile mapping and sprites)
 info = extract_level_info(src)
 enemyColours = {}
-for line in info.split("\n"):
-    if (line):
+tileMapping = {}
+lines = info.split("\n")
+# Read the data backwards by using 'pop'. We get the enemy mapping, then the
+# tile mapping.
+while lines:
+    line = lines.pop().strip()
+    if (line == "*"):
+        break
+    elif (line):
         (name, r, g, b) = line.split()
         enemyColours[int(r), int(g), int(b)] = name
+# Now read the tile mapping
+while lines:
+    line = lines.pop().strip()
+    if (line):
+        (name, r, g, b) = line.split()
+        tileMapping[int(r), int(g), int(b)] = name
 
-ground = extract_terrain(src, "ground")
-midground = extract_terrain(src, "midground")
+# Come up with a mapping for terrain name to number
+terrainNames = list(sorted(tileMapping.values()))
+
+ground = extract_terrain(src, "ground", tileMapping, terrainNames)
+midground = extract_terrain(src, "midground", tileMapping, terrainNames)
 enemies = extract_enemies(src)
 
-out = {"terrains" : TERRAIN_NAMES,
+out = {"terrains" : terrainNames,
        "ground" : ground,
        "midground" : midground,
        "enemies" : enemies}

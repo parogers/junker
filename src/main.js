@@ -120,8 +120,7 @@ function documentLoaded(cvs)
 
     canvas.focus();
 
-    resources = new Resources("../media/", IMAGES, AUDIO);
-    resources.onComplete = main;
+    resources = new Resources("../media/", IMAGES, AUDIO, main);
     resources.load();
 }
 

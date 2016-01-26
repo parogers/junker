@@ -19,17 +19,37 @@
 
 /* terrain.js */
 
-var NOTHING = 0;
-var DIRT = 1;
-var GRASS = 2;
-var WATER = 3;
-var TREES = 4;
-var FLOWERS = 5;
-var CRATER = 6;
-var WALL = 7;
-var FOG = 8;
-var STONE = 9;
+/* Each terrain type has certain metadata info attached to it (eg whether
+ * the terrain is passable to the player, enemies, inflicts player damage, 
+ * etc). This is the number of bits reserved for that data */
+var TERRAIN_META_BITS = 5;
 
+/* Bit masks for the various terrain metadata properties */
+var TERRAIN_META_BLOCKED = 1;
+var TERRAIN_META_DESTRUCTABLE = 2;
+var TERRAIN_META_PLAYER_DMG = 4;
+
+/* Convenience function for combining a unique ID with a set of flags to
+ * make a terrain number. */
+function make_terrain(id, flags)
+{
+    return (id << TERRAIN_META_BITS) | flags;
+}
+
+/* The global list of terrain numbers */
+var NOTHING = make_terrain(0, 0);
+var DIRT    = make_terrain(1, 0);
+var GRASS   = make_terrain(2, 0);
+var WATER   = make_terrain(3, 0);
+var TREES   = make_terrain(4, TERRAIN_META_BLOCKED);
+var FLOWERS = make_terrain(5, 0);
+var CRATER  = make_terrain(6, TERRAIN_META_BLOCKED);
+var WALL    = make_terrain(7, TERRAIN_META_BLOCKED);
+var FOG     = make_terrain(8, 0);
+var STONE   = make_terrain(9, TERRAIN_META_BLOCKED);
+
+/* Maps a terrain name (used in terrain data files) to the terrain number
+ * used internally. */
 var TERRAIN_NAME_MAPPING = {
     "-" : NOTHING,
     "dirt" : DIRT,
@@ -77,18 +97,32 @@ var WALL_TILE_START = 85;
 var FOG_TILE_START = 100;
 var STONE_TILE_START = 115;
 
-var TERRAIN_TILE_START = [
-    NOTHING_TILE,
-    DIRT_TILE,
-    GRASS_TILE_START,
-    WATER_TILE_START,
-    TREES_TILE_START,
-    FLOWERS_TILE_START,
-    CRATER_TILE_START,
-    WALL_TILE_START,
-    FOG_TILE_START,
-    STONE_TILE_START
-];
+/* Now map the terrain number onto the tile starting position within the 
+ * big tile image. */
+/*var TERRAIN_TILE_START = {
+    NOTHING : NOTHING_TILE,
+    DIRT : DIRT_TILE,
+    GRASS : GRASS_TILE_START,
+    WATER : WATER_TILE_START,
+    TREES : TREES_TILE_START,
+    FLOWERS : FLOWERS_TILE_START,
+    CRATER : CRATER_TILE_START,
+    WALL : WALL_TILE_START,
+    FOG : FOG_TILE_START,
+    STONE : STONE_TILE_START,
+};*/
+
+TERRAIN_TILE_START = {}
+TERRAIN_TILE_START[NOTHING] = NOTHING_TILE;
+TERRAIN_TILE_START[DIRT] = DIRT_TILE;
+TERRAIN_TILE_START[GRASS] = GRASS_TILE_START;
+TERRAIN_TILE_START[WATER] = WATER_TILE_START;
+TERRAIN_TILE_START[TREES] = TREES_TILE_START;
+TERRAIN_TILE_START[FLOWERS] = FLOWERS_TILE_START;
+TERRAIN_TILE_START[CRATER] = CRATER_TILE_START;
+TERRAIN_TILE_START[WALL] = WALL_TILE_START;
+TERRAIN_TILE_START[FOG] = FOG_TILE_START;
+TERRAIN_TILE_START[STONE] = STONE_TILE_START;
 
 /* A set of tiles for rendering a tiled grid */
 function Tileset(img, tileWidth, tileHeight) 
@@ -149,6 +183,7 @@ function Terrain(tileset, layer, base) {
     this.rows = 2*layer.rows;
     this.cols = 2*layer.cols;
     this.dirty = true;
+
     /* The grid of subdivided cells */
     this.grid = [];
     for (var row = 0; row < this.rows; row++) {
