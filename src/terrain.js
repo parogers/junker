@@ -37,16 +37,17 @@ function make_terrain(id, flags)
 }
 
 /* The global list of terrain numbers */
-var NOTHING = make_terrain(0, 0);
-var DIRT    = make_terrain(1, 0);
-var GRASS   = make_terrain(2, 0);
-var WATER   = make_terrain(3, 0);
-var TREES   = make_terrain(4, TERRAIN_META_BLOCKED);
-var FLOWERS = make_terrain(5, 0);
-var CRATER  = make_terrain(6, TERRAIN_META_BLOCKED);
-var WALL    = make_terrain(7, TERRAIN_META_BLOCKED);
-var FOG     = make_terrain(8, 0);
-var STONE   = make_terrain(9, TERRAIN_META_BLOCKED);
+var NOTHING  = make_terrain(0, 0);
+var DIRT     = make_terrain(1, 0);
+var GRASS    = make_terrain(2, 0);
+var WATER    = make_terrain(3, 0);
+var TREES    = make_terrain(4, TERRAIN_META_BLOCKED);
+var FLOWERS  = make_terrain(5, 0);
+var CRATER   = make_terrain(6, TERRAIN_META_BLOCKED);
+var WALL     = make_terrain(7, TERRAIN_META_BLOCKED);
+var FOG      = make_terrain(8, 0);
+var STONE    = make_terrain(9, TERRAIN_META_BLOCKED);
+var AIRSTRIP = make_terrain(10);
 
 /* Maps a terrain name (used in terrain data files) to the terrain number
  * used internally. */
@@ -61,6 +62,7 @@ var TERRAIN_NAME_MAPPING = {
     "wall" : WALL,
     "stone" : STONE,
     "fog" : FOG,
+    "airstrip" : AIRSTRIP,
 };
 
 var SE_HOLE_TILE = 0;
@@ -96,6 +98,7 @@ var CRATER_TILE_START = 70;
 var WALL_TILE_START = 85;
 var FOG_TILE_START = 100;
 var STONE_TILE_START = 115;
+var AIRSTRIP_TILE_START = 130;
 
 /* Now map the terrain number onto the tile starting position within the 
  * big tile image. */
@@ -123,6 +126,7 @@ TERRAIN_TILE_START[CRATER] = CRATER_TILE_START;
 TERRAIN_TILE_START[WALL] = WALL_TILE_START;
 TERRAIN_TILE_START[FOG] = FOG_TILE_START;
 TERRAIN_TILE_START[STONE] = STONE_TILE_START;
+TERRAIN_TILE_START[AIRSTRIP] = AIRSTRIP_TILE_START;
 
 /* A set of tiles for rendering a tiled grid */
 function Tileset(img, tileWidth, tileHeight) 
