@@ -166,14 +166,21 @@ function parse_level(data)
 	var x = enemies[n][1];
 	var y = enemies[n][2];
 
+	log_message("Spawning " + type);
 	if (type === "turret") 
 	{
 	    var e = new Turret();
 	    e.level = level;
-	    //e.set_image(resources.images.turretBase);
 	    e.x = 2*TILEW*x + TILEW;
 	    e.y = 2*TILEH*y + TILEH;
-	    /* The turret base sits on the ground */
+	    e.spawn(level);
+	}
+	else if (type === "jet") 
+	{
+	    var e = new Jet();
+	    e.level = level;
+	    e.x = 2*TILEW*x;
+	    e.y = 2*TILEH*y;
 	    e.spawn(level);
 	}
     }

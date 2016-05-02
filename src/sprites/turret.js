@@ -30,7 +30,11 @@ function Turret()
     this.gunSprite = null;
     /* Maximum number of shots per second */
     this.firingRate = 1.25+0.5*Math.random();
+    /* Speed of fired projectiles in pixels/sec */
+    this.shotSpeed = 200;
     this.health = 3;
+    /* Maximum turning speed of the turret in radians per sec */
+    //this.turnSpeed = 3.14/2;
     this.explodeTimer = 0;
     /* Cooldown counter between shots (calculate from the rate and 
      * decremented in 'update') */
@@ -43,12 +47,7 @@ Turret.prototype = new Sprite;
 
 Turret.prototype.update = function(dt) 
 {
-    if (this.img === null) 
-    {
-    }
-
-    //this.gunSprite.rotation += 3*dt;
-
+    /* Check if we're exploding */
     if (this.explodeTimer > 0) 
     {
 	this.explodeTimer -= dt;
@@ -60,6 +59,7 @@ Turret.prototype.update = function(dt)
 	}
     }
 
+    /* If the turret isn't visible don't do anything */
     if (!this.level.check_pos_visible(this.x, this.y))
     {
 	return;
@@ -67,15 +67,16 @@ Turret.prototype.update = function(dt)
 
     /* Aim the barrel towards the player, if they're close enough */
     /* ... */
-    this.tracking = true;
+    var dx = (this.level.player.x - this.x);
+    var dy = (this.level.player.y - this.y);
+    var playerDist = Math.sqrt(dx*dx + dy*dy);
+    this.tracking = (playerDist < 300);
 
     /* Periodically shoot at the player */
     if (this.tracking) 
     {
 	/* Aim the gun at the player */
-	var dx = (this.level.player.x - this.x);
-	var dy = (this.level.player.y - this.y);
-	this.gunSprite.rotation = Math.atan2(dy, dx);;
+	this.gunSprite.rotation = Math.atan2(dy, dx);
 
 	this.cooldown -= dt;
 	if (this.cooldown <= 0) {
@@ -83,7 +84,8 @@ Turret.prototype.update = function(dt)
 	    this.cooldown = 1.0 / this.firingRate;
 
 	    var shot = new Shot(this);
-	    var mag = Math.sqrt(dx*dx + dy*dy);
+	    //var mag = Math.sqrt(dx*dx + dy*dy);
+	    shot.speed = this.shotSpeed;
 	    shot.dirX = Math.cos(this.gunSprite.rotation);
 	    shot.dirY = Math.sin(this.gunSprite.rotation);
 	    shot.x = this.x + 15*shot.dirX;
@@ -105,6 +107,7 @@ Turret.prototype.spawn = function(level)
     this.gunSprite = new Sprite(resources.images.turretGun);
     this.gunSprite.x = this.x;
     this.gunSprite.y = this.y;
+    this.gunSprite.rotation = 3.14/2;
     /* Make sure the gun is rendered above the turret base */
     this.level.groundSprites.add(this);
     this.level.middleSprites.add(this.gunSprite);

@@ -60,7 +60,13 @@ var IMAGES = {
     "tankGun" : "player/tank-gun.png",
     "turretBase" : "turret/turret-base.png",
     "turretGun" : "turret/turret-gun.png",
-    "testing" : "testing.gif"
+    "testing" : "testing.gif",
+
+    "jet" : "jet/jet-north.png",
+    "jetLeft" : "jet/jet-bank-left.png",
+    "jetRight" : "jet/jet-bank-right.png",
+    "jetFlame1" : "jet/flame1.png",
+    "jetFlame2" : "jet/flame2.png"
 };
 
 var AUDIO = {

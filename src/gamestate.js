@@ -75,7 +75,7 @@ function GameStateMachine()
 	loadLevel: {
 	    enter: function() {
 		/* Load the game level via callback */
-		resources.load_level("levels/out.json", function(level) {
+		resources.load_level("levels/demo.json", function(level) {
 		    /* TODO - find a better place to store this */
 		    resources.level = level;
 

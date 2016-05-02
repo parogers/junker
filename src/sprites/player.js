@@ -74,19 +74,6 @@ function Player()
 
 Player.prototype = new Sprite;
 
-Player.prototype.check_passable = function(x, y) 
-{
-    /* Checks if the given map coordinate is passable, or blocked */
-    var row = (y/(2*TILEW))|0;
-    var col = (x/(2*TILEW))|0;
-    if (row >= 0 && row < this.level.ground.rows &&
-	col >= 0 && col < this.level.ground.cols) {
-	return (!(this.level.ground[row][col] & TERRAIN_META_BLOCKED) && 
-		!(this.level.midground[row][col] & TERRAIN_META_BLOCKED));
-    }
-    return false;
-}
-
 Player.prototype.update = function(dt)
 {
     var dx = 0, dy = 0;
@@ -119,14 +106,14 @@ Player.prototype.update = function(dt)
     if (mag > 0)
     {
 	this.moving = true;
-	if (this.check_passable(this.x+dx, this.y+dy)) {
+	if (this.level.check_passable(this.x+dx, this.y+dy)) {
 	    /* The way is clear */
 	    this.x += dx;
 	    this.y += dy;
-	} else if (dy && this.check_passable(this.x, this.y+dy)) {
+	} else if (dy && this.level.check_passable(this.x, this.y+dy)) {
 	    /* We can move forward/backward */
 	    this.y += dy;
-	} else if (dx && this.check_passable(this.x+dx, this.y)) {
+	} else if (dx && this.level.check_passable(this.x+dx, this.y)) {
 	    /* We can move left/right */
 	    this.x += dx;
 	}

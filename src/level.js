@@ -37,7 +37,7 @@ function Level(tileset, rows, cols)
 	canvas.width, canvas.height);
 
     this.terrainView.xpos = 15;
-    this.terrainView.ypos = this.rows*TILEH*2-3.5*canvas.height;
+    this.terrainView.ypos = this.rows*TILEH*2-3.4*canvas.height;
 
     /* TODO - maintain a list of visible sprites to speed things up */
 
@@ -126,6 +126,19 @@ function Level(tileset, rows, cols)
 	this.middleSprites.remove(spr);
 	this.airSprites.remove(spr);
 	this.targets.remove(spr);
+    }
+
+    /* Checks if the given map coordinate is generally passable, or blocked */
+    this.check_passable = function(x, y) 
+    {
+	var row = (y/(2*TILEW))|0;
+	var col = (x/(2*TILEW))|0;
+	if (row >= 0 && row < this.ground.rows &&
+	    col >= 0 && col < this.ground.cols) {
+	    return (!(this.ground[row][col] & TERRAIN_META_BLOCKED) && 
+		    !(this.midground[row][col] & TERRAIN_META_BLOCKED));
+	}
+	return false;
     }
 }
 

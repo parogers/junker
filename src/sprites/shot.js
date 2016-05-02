@@ -63,10 +63,13 @@ Shot.prototype.update = function(dt)
 	}
     }
 
-    if (collide && collide.handle_shot_collision && 
-	collide.handle_shot_collision(this))
+    /* Check if the shot either collides with another sprite, or part
+     * of the terrain. */
+    if ((collide && collide.handle_shot_collision && 
+	 collide.handle_shot_collision(this)) || 
+	!this.level.check_passable(this.x, this.y))
     {
-	/* The shot collided with the sprite so have it explode */
+	/* The shot collided with something so have it explode */
 	this.level.remove_sprite(this);
 	var exp = new Explosion(this.x, this.y);
 	exp.spawn(this.level);
