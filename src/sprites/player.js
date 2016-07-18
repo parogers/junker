@@ -106,17 +106,8 @@ Player.prototype.update = function(dt)
     if (mag > 0)
     {
 	this.moving = true;
-	if (this.level.check_passable(this.x+dx, this.y+dy)) {
-	    /* The way is clear */
-	    this.x += dx;
-	    this.y += dy;
-	} else if (dy && this.level.check_passable(this.x, this.y+dy)) {
-	    /* We can move forward/backward */
-	    this.y += dy;
-	} else if (dx && this.level.check_passable(this.x+dx, this.y)) {
-	    /* We can move left/right */
-	    this.x += dx;
-	}
+	/* Move the player tank */
+	this.do_normal_move(dx, dy);
 
 	/* Check if the tank has entered into water */
 	var terr = this.level.get_ground_terrain(this.x, this.y);

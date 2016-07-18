@@ -183,6 +183,14 @@ function parse_level(data)
 	    e.y = 2*TILEH*y;
 	    e.spawn(level);
 	}
+	else if (type === "pod") 
+	{
+	    var e = new Pod();
+	    e.level = level;
+	    e.x = 2*TILEW*x;
+	    e.y = 2*TILEH*y;
+	    e.spawn(level);
+	}
     }
 
     return level;

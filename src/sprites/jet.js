@@ -40,7 +40,7 @@ function Jet()
     this.flameOffset = 25;
     this.velocity = 0;
     this.timer = 0;
-    this.takeoffSpeed = 200;
+    this.takeoffSpeed = 250;
     /* Whether the jet is banking left (-1) right (1) or not (0) */
     this.banking = 0;
     this.bankingSpeed = 40;

@@ -86,7 +86,7 @@ function MultiExplosion(x, y, radius, duration)
     this.radius = radius;
     this.duration = duration;
     this.time = 0;
-    this.period = 0.05;
+    this.period = 0.04;
     this.counter = 0;
 }
 
@@ -130,6 +130,7 @@ MultiExplosion.prototype.update = function(dt)
 	var exp = new BigExplosion(
 	    this.x + px * this.radius, 
 	    this.y + py * this.radius);
+	exp.fps = 20;
 	exp.spawn(this.level);
 	this.counter = this.period;
     }

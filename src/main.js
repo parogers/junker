@@ -56,6 +56,13 @@ var IMAGES = {
     "big_explode5" : "big-explosion/explode5.png",
     "big_explode6" : "big-explosion/explode6.png",
 
+    "pod1" : "pod/pod1.png",
+    "pod2" : "pod/pod2.png",
+    "pod3" : "pod/pod3.png",
+    "pod4" : "pod/pod4.png",
+    "pod5" : "pod/pod5.png",
+    "pod6" : "pod/pod6.png",
+
     "tankWater" : "player/tankbase-water.png",
     "tankGun" : "player/tank-gun.png",
     "turretBase" : "turret/turret-base.png",

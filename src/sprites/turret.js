@@ -29,9 +29,9 @@ function Turret()
      * to 'update' below. */
     this.gunSprite = null;
     /* Maximum number of shots per second */
-    this.firingRate = 1.25+0.5*Math.random();
+    this.firingRate = 0.7+0.5*Math.random();
     /* Speed of fired projectiles in pixels/sec */
-    this.shotSpeed = 200;
+    this.shotSpeed = 150;
     this.health = 3;
     /* Maximum turning speed of the turret in radians per sec */
     //this.turnSpeed = 3.14/2;

@@ -75,6 +75,23 @@ Sprite.prototype.check_collision = function(x, y)
 	    y < this.y - this.offsetY + this.height());
 }
 
+/* Have the sprite move in the given direction, possibly sliding along
+ * any obstacle terrain that might be in the way */
+Sprite.prototype.do_normal_move = function(dx, dy)
+{
+    if (this.level.check_passable(this.x+dx, this.y+dy)) {
+	/* The way is clear */
+	this.x += dx;
+	this.y += dy;
+    } else if (dy && this.level.check_passable(this.x, this.y+dy)) {
+	/* We can move forward/backward */
+	this.y += dy;
+    } else if (dx && this.level.check_passable(this.x+dx, this.y)) {
+	/* We can move left/right */
+	this.x += dx;
+    }
+}
+
 /* SpriteGroup */
 function SpriteGroup() {
     this.sprites = {};
