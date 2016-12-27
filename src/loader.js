@@ -82,6 +82,11 @@ function ImageLoader(basePath)
     this.onLoaded = null;
     this.onProgress = null;
 
+    this.getNumRemaining = function()
+    {
+	return Object.keys(this.remaining).length;
+    }
+
     this.handleImageLoaded = function(src) 
     {
 	delete this.remaining[src];
@@ -89,10 +94,6 @@ function ImageLoader(basePath)
 	/* Notify that another image was loaded */
 	if (this.onLoaded != null) {
 	    this.onLoaded(src);
-	}
-	if (this.onProgress != null) {
-	    this.onProgress(Object.keys(this.images).length-remains,
-			    Object.keys(this.images).length);
 	}
 	/* Check if the complete set was loaded, and send a notification */
 	if (this.onComplete != null && remains == 0) {
@@ -170,7 +171,6 @@ function parse_level(data)
 	if (type === "turret") 
 	{
 	    var e = new Turret();
-	    e.level = level;
 	    e.x = 2*TILEW*x + TILEW;
 	    e.y = 2*TILEH*y + TILEH;
 	    e.spawn(level);
@@ -178,7 +178,6 @@ function parse_level(data)
 	else if (type === "jet") 
 	{
 	    var e = new Jet();
-	    e.level = level;
 	    e.x = 2*TILEW*x;
 	    e.y = 2*TILEH*y;
 	    e.spawn(level);
@@ -186,7 +185,11 @@ function parse_level(data)
 	else if (type === "pod") 
 	{
 	    var e = new Pod();
-	    e.level = level;
+	    e.x = 2*TILEW*x;
+	    e.y = 2*TILEH*y;
+	    e.spawn(level);
+
+	    var e = new Powerup();
 	    e.x = 2*TILEW*x;
 	    e.y = 2*TILEH*y;
 	    e.spawn(level);

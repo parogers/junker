@@ -37,12 +37,10 @@ function TitleScreen()
     var fog = new Layer(rows, cols);
     for (var row = 0; row < rows; row++) {
 	for (var col = 0; col < cols; col++) {
-	    if (Math.random() < 0.5) 
+	    if (Math.random() < 0.5) {
 		ground[row][col] = WATER;
-	    else
+	    } else {
 		ground[row][col] = GRASS;
-
-	    if (ground[row][col] === GRASS) {
 		if (Math.random() > 0.3) {
 		    trees[row][col] = TREES;
 		} else if (Math.random() > 0.25) {

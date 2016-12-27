@@ -6,6 +6,14 @@ Arcade tank shooter written in Javascript, using HTML5 canvas.
 Demo
 ====
 
+Title screen
+* Game title
+* Scrolling background
+* Transition to demo level
+Single level
+* Variety of map tiles
+* Linear progression
+* Ending in boss fight
 Sprites
 * Player tank (movement, turret, in water)
 * Explosion
@@ -15,6 +23,7 @@ Sprites
 * Enemy turret (stationary)
 * Enemy tank
 * Enemy jet
+* Enemy floating pod
 * Robot soldier
 * Mine? (planted by robot soldier)
 * Boss
@@ -24,25 +33,15 @@ Audio
 * Explosion sound
 * Water splash
 * Music?
-Levels
-* Intro level
-* * Beach landing / forest
-* * Ends with perimeter gate
-* * Boss - giant tank?
-* Industrial park
-* * Buildings
-* * Fuel bunkers
-* * Open pits
-* * Air strips
-* * Ends with mine entrance
-* Mine level
-* * Conveyer belts
-* * Bridges over chasms
+Powerups
+* Multi shot
+* Power/charge shot
+* Flame thrower
+* Shields
 
 TODO
 ====
 
-Needs thorough testing on Opera and IE. 
-
-Somewhat tested on Firefox v34 & 40 and Chrome v39.
-
+* Needs thorough testing on Opera and IE. 
+* Somewhat tested on Firefox v34 & 40 and Chrome v39.
+* Performance testing on various setups/systems

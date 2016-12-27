@@ -73,7 +73,10 @@ var IMAGES = {
     "jetLeft" : "jet/jet-bank-left.png",
     "jetRight" : "jet/jet-bank-right.png",
     "jetFlame1" : "jet/flame1.png",
-    "jetFlame2" : "jet/flame2.png"
+    "jetFlame2" : "jet/flame2.png",
+
+    "powerupMultishot" : "powerups/multishot.png",
+    "powerupBomb" : "powerups/bomb.png"
 };
 
 var AUDIO = {

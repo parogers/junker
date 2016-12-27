@@ -41,6 +41,9 @@ function Player()
     this.shotCooldown = 0;
     /* Whether the player tank is currently in water */
     this.inWater = false;
+    /* Barrel vector (unit) */
+    this.barrelDirX = 0;
+    this.barrelDirY = 0;
 
     if (MOTOR_SOUNDS) 
     {
@@ -96,8 +99,8 @@ Player.prototype.update = function(dt)
 
 	if (this.inWater) {
 	    /* Move a little slower while in water */
-	    dx *= 0.75;
-	    dy *= 0.75;
+	    dx *= 0.6;
+	    dy *= 0.6;
 	}
     }
 
@@ -137,40 +140,17 @@ Player.prototype.update = function(dt)
     var dy = controls.cursorY - (this.y - this.level.terrainView.ypos);
     this.gunSprite.rotation = Math.atan2(dy, dx);
     var mag = Math.sqrt(dx*dx + dy*dy);
-    dx = dx / mag;
-    dy = dy / mag;
+
+    this.barrelDirX = dx / mag;
+    this.barrelDirY = dy / mag;
     //this.gunSprite.rotation = -Math.PI/2; //this.rotation;
 
-    if (controls.fire)
-    {
-	if (this.shotCooldown <= 0) 
-	{
-	    var shot = new Shot(this);
-	    shot.dirX = dx; //Math.cos(this.gunSprite.rotation);
-	    shot.dirY = dy; //Math.sin(this.gunSprite.rotation);
-	    shot.x = this.x + this.barrelLength*shot.dirX;
-	    shot.y = this.y + this.barrelLength*shot.dirY;
-	    shot.spawn(this.level);
-	    this.shotCooldown = this.shotDelay;
-	    resources.shotAudio.play();
-	}
-	//this.motor.pause();
+    if (controls.fire) {
+	this.primary_fire();
     }
 
-    if (controls.secondary)
-    {
-	if (this.shotCooldown <= 0) 
-	{
-	    var shot = new Bomb(
-		this.x + this.barrelLength*dx,
-		this.y + this.barrelLength*dy,
-		controls.cursorX + this.level.terrainView.xpos,
-		controls.cursorY + this.level.terrainView.ypos);
-	    shot.spawn(this.level);
-	    this.shotCooldown = this.shotDelay;
-	    resources.bombShotAudio.play();
-	}
-	//this.motor.pause();
+    if (controls.secondary) {
+	this.secondary_fire();
     }
 
     if (MOTOR_SOUNDS) 
@@ -193,6 +173,38 @@ Player.prototype.update = function(dt)
     /* Move the gun sprite back into position */
     this.gunSprite.x = this.x;
     this.gunSprite.y = this.y;
+}
+
+Player.prototype.primary_fire = function()
+{
+    if (this.shotCooldown > 0) {
+	return;
+    }
+    var shot = new Shot(this);
+    shot.dirX = this.barrelDirX;
+    shot.dirY = this.barrelDirY;
+    shot.x = this.x + this.barrelLength*shot.dirX;
+    shot.y = this.y + this.barrelLength*shot.dirY;
+    shot.spawn(this.level);
+    this.shotCooldown = this.shotDelay;
+    resources.shotAudio.play();
+    //this.motor.pause();
+}
+
+Player.prototype.secondary_fire = function()
+{
+    if (this.shotCooldown <= 0) 
+    {
+	var shot = new Bomb(
+	    this.x + this.barrelLength*this.barrelDirX,
+	    this.y + this.barrelLength*this.barrelDirY,
+	    controls.cursorX + this.level.terrainView.xpos,
+	    controls.cursorY + this.level.terrainView.ypos);
+	shot.spawn(this.level);
+	this.shotCooldown = this.shotDelay;
+	resources.bombShotAudio.play();
+    }
+    //this.motor.pause();
 }
 
 Player.prototype.spawn = function(level)
