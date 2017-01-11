@@ -22,6 +22,7 @@
 function Level(tileset, rows, cols)
 {
     /* The layers */
+    this.player_start = null;
     this.rows = rows;
     this.cols = cols;
     this.ground = new Layer(rows, cols);
@@ -36,8 +37,8 @@ function Level(tileset, rows, cols)
 	[this.groundTerr, this.midgroundTerr], 
 	canvas.width, canvas.height);
 
-    this.terrainView.xpos = 15;
-    this.terrainView.ypos = this.rows*TILEH*2-3.4*canvas.height;
+    //this.terrainView.xpos = 15;
+    //this.terrainView.ypos = this.rows*TILEH*2-3.4*canvas.height;
 
     /* TODO - maintain a list of visible sprites to speed things up */
 
@@ -49,14 +50,20 @@ function Level(tileset, rows, cols)
     /* The sprites that are considered to be valid targets for the player */
     this.targets = new SpriteGroup();
 
-    this.player = new Player();
-    //this.player.controls = new Controls();
-    //this.player.img = resources.images.dot2;
-    this.player.x = this.terrainView.xpos + 150;
-    this.player.y = this.terrainView.ypos + 200;
-    this.player.level = this;
-    this.player.spawn(this);
-    //player.rotation = 0.4;
+    this.spawn_player = function()
+    {
+	this.player = new Player();
+	//this.player.controls = new Controls();
+	//this.player.img = resources.images.dot2;
+	this.player.x = this.player_start[0]; //this.terrainView.xpos + 150;
+	this.player.y = this.player_start[1]; //this.terrainView.ypos + 200;
+	this.player.level = this;
+	this.player.spawn(this);
+	//player.rotation = 0.4;
+
+	this.terrainView.xpos = 15;
+	this.terrainView.ypos = this.player_start[1]-this.terrainView.height/2;
+    }
 
     this.update = function(dt) 
     {
@@ -64,6 +71,9 @@ function Level(tileset, rows, cols)
 	var bottom = this.terrainView.height*0.7;
 	if (this.player.y < this.terrainView.ypos + bottom) {
 	    this.terrainView.ypos = this.player.y - bottom;
+	    /* TODO - there is a bug when ypos is negative, so clamp the
+	     * value here as a quick fix */
+	    if (this.terrainView.ypos < 0) this.terrainView.ypos = 0;
 	}
 	this.terrainView.update(dt);
 	this.groundSprites.update(dt);
@@ -94,6 +104,8 @@ function Level(tileset, rows, cols)
 	    this.groundSprites.render(context, x1, y1, x2, y2);
 	    this.middleSprites.render(context, x1, y1, x2, y2);
 	    this.airSprites.render(context, x1, y1, x2, y2);
+	} catch(e) {
+	    console.log("Error rendering terrain: " + e);
 	} finally {
 	    context.restore();
 	}

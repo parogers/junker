@@ -19,121 +19,12 @@
 
 /* loader.js */
 
-function AudioLoader(basePath)
+function load_level(path, onComplete)
 {
-    this.basePath = basePath;
-    this.sounds = {};
-    this.remaining = {};
-    this.onComplete = null;
-
-    this.handleSoundLoaded = function(src) 
-    {
-	delete this.remaining[src];
-	var remains = Object.keys(this.remaining).length;
-	console.log("loaded clip: " + src + ", " + remains + " left");
-	if (remains == 0 && this.onComplete != null) {
-	    this.onComplete();
-	}
-	/* TODO - handle errors */
-    }
-
-    this.handleSoundFailed = function(src) {
-	alert("Failed to load: " + src);
-    }
-
-    this.load = function(srcList) 
-    {
-	for (var name in srcList)
-	{
-	    var src = srcList[name];
-	    var snd = new Audio();
-
-	    snd.oncanplaythrough = function(ldr, src) {
-		return function() {
-		    /* Remove the event handler so it's not called later. This
-		     * can happen in Firefox when an audio clip is looped */
-		    this.oncanplaythrough = undefined;
-		    ldr.handleSoundLoaded(src);
-		}
-	    }(this, src);
-	    snd.src = this.basePath + src;
-	    snd.onerror = function(ldr, src)
-	    {
-		return function() {
-		    /* Remove the event handler so it's not called later */
-		    this.onerror = undefined;
-		    return ldr.handleSoundFailed(src);
-		}
-	    }(this, src);
-
-	    this.sounds[name] = snd;
-	    this.remaining[src] = true;
-	}
-    }
-}
-
-function ImageLoader(basePath)
-{
-    this.basePath = basePath;
-    this.images = {};
-    this.remaining = {};
-
-    this.onComplete = null;
-    this.onLoaded = null;
-    this.onProgress = null;
-
-    this.getNumRemaining = function()
-    {
-	return Object.keys(this.remaining).length;
-    }
-
-    this.handleImageLoaded = function(src) 
-    {
-	delete this.remaining[src];
-	var remains = Object.keys(this.remaining).length;
-	/* Notify that another image was loaded */
-	if (this.onLoaded != null) {
-	    this.onLoaded(src);
-	}
-	/* Check if the complete set was loaded, and send a notification */
-	if (this.onComplete != null && remains == 0) {
-	    this.onComplete();
-	}
-    }
-
-    this.handleImageFailed = function(src)
-    {
-	alert("Failed to load image: " + src);
-    }
-
-    this.load = function(srcList) 
-    {
-	for (var name in srcList)
-	{
-	    var src = srcList[name];
-	    var img = new Image();
-	    img.onload = function(ldr, src) 
-	    {
-		return function() {
-		    /* Pass along the image loaded event */
-		    ldr.handleImageLoaded(src);
-		}
-	    }(this, src);
-
-	    img.onerror = function(ldr, src)
-	    {
-		return function() {
-		    return ldr.handleImageFailed(src);
-		}
-	    }(this, src);
-
-	    this.images[name] = img;
-	    this.remaining[src] = true;
-	    /* This will start loading the image data when this
-	     * function exits */
-	    img.src = this.basePath + src;
-	}
-    }
+    /* Setup a callback to parse the JSON level file once it's loaded */
+    return $.getJSON(path, function(data) {
+	onComplete(parse_level(data));
+    });
 }
 
 /* Takes a chunk of JSON type data and returns a Level object */
@@ -167,91 +58,122 @@ function parse_level(data)
 	var x = enemies[n][1];
 	var y = enemies[n][2];
 
-	log_message("Spawning " + type);
-	if (type === "turret") 
-	{
-	    var e = new Turret();
-	    e.x = 2*TILEW*x + TILEW;
-	    e.y = 2*TILEH*y + TILEH;
-	    e.spawn(level);
+	if (type == "start") {
+	    level.player_start = [x*2*TILEW, y*2*TILEH];
+	    continue;
 	}
-	else if (type === "jet") 
-	{
-	    var e = new Jet();
-	    e.x = 2*TILEW*x;
-	    e.y = 2*TILEH*y;
-	    e.spawn(level);
-	}
-	else if (type === "pod") 
-	{
-	    var e = new Pod();
-	    e.x = 2*TILEW*x;
-	    e.y = 2*TILEH*y;
-	    e.spawn(level);
 
-	    var e = new Powerup();
-	    e.x = 2*TILEW*x;
-	    e.y = 2*TILEH*y;
-	    e.spawn(level);
+	log_message("Spawning " + type);
+
+	classes = {
+	    "turret" : Turret,
+	    "jet" : Jet,
+	    "pod" : Pod,
+	    "speed" : SpeedPowerup,
+	    "multishot" : MultishotPowerup,
+	    "bunker" : Bunker,
+	    "podemitter" : PodEmitter,
+	};
+
+	var e = new classes[type];
+	e.x = 2*TILEW*x;
+	e.y = 2*TILEH*y;
+	if (type != "jet") {
+	    e.x += TILEW;
+	    e.y += TILEH;
 	}
+	e.spawn(level);
     }
+    level.spawn_player();
 
     return level;
 }
 
-function Resources(basePath, imageList, audioList, onComplete)
+function load_sound(name, path, onload, onerror)
 {
-    this.basePath = basePath;
-    this.onComplete = onComplete;
-    this.onError = null;
-    this.imageList = imageList;
-    this.audioList = audioList;
-    this.tileset = null;
-    this.level = null;
-    /* The Sound objects hashed by name */
-    this.sounds = null;
+    var snd = new Audio();
 
-    /* Loads the various resources requested by this object (images and audio
-     * clips). This function eventually triggers the 'onComplete' function 
-     * when finished, or 'onError' if there's a problem. */
-    this.load = function()
-    {
-	this._load_images();
+    snd.oncanplaythrough = function() {
+	/* Remove the event handler so it's not called later. This
+	 * can happen in Firefox when an audio clip is looped */
+	this.oncanplaythrough = undefined;
+	onload(name, snd);
+    }
+    snd.onerror = function(e) {
+	/* Remove the event handler so it's not called later */
+	this.onerror = undefined;
+	onerror(name, e);
+    }
+    snd.src = path;
+}
+
+function load_image(name, path, onload, onerror)
+{
+    var img = new Image();
+    img.onload = function() { onload(name, img); }
+    img.onerror = function(e) { onerror(name, e); }
+    img.src = path;
+}
+
+function load_resources(basePath, srcList, oncomplete, onerror, onload)
+{
+    var resources = {};
+    var remaining = {};
+
+    for (var name in srcList) {
+	remaining[name] = srcList[name];
     }
 
-    this.load_level = function(path, onComplete)
+    function resource_loaded(name, res)
     {
-	/* Setup a callback to parse the JSON level file once it's loaded */
-	return $.getJSON(path, function(data) {
-	    onComplete(parse_level(data));
-	});
-    }
-
-    this._load_images = function()
-    {
-	var imageLoader = new ImageLoader(this.basePath);
-	imageLoader.onComplete = function(res, ldr) {
-	    return function() {
-		/* Now load the audio */
-		log_message("Images loaded");
-		res.images = ldr.images;
-		res._load_audio();
+	/* Add to the list of loaded resources, remove from the list of
+	 * ones remaining to be loaded */
+	var i = name.indexOf(".");
+	if (i != -1) {
+	    var prefix = name.substr(0, i);
+	    if (resources[prefix] === undefined) {
+		resources[prefix] = {};
 	    }
-	}(this, imageLoader);
-	imageLoader.load(this.imageList);
+	    resources[prefix][name.substr(i+1)] = res;
+	} else {
+	    resources[name] = res;
+	}
+	delete remaining[name];
+	if (onload) onload(name);
+	if (Object.keys(remaining).length === 0 && oncomplete) {
+	    oncomplete(resources);
+	}
     }
 
-    this._load_audio = function()
+    function resource_failed(name, e)
     {
-	var audioLoader = new AudioLoader(this.basePath);
-	audioLoader.onComplete = function(res, ldr) {
-	    return function() {
-		log_message("Audio loaded");
-		res.sounds = ldr.sounds;
-		if (res.onComplete != null)
-		    res.onComplete();
-	    }
-	}(this, audioLoader);
-	audioLoader.load(this.audioList);
+	if (onerror) onerror(srcList[name]);
+	delete remaining[name];
     }
+
+    var names = Object.keys(srcList);
+    names.sort();
+    for (var n = 0; n < names.length; n++)
+    {
+	var name = names[n];
+	var src = srcList[name];
+	if (endswith(src.toLowerCase(), "wav") ||
+	    endswith(src.toLowerCase(), "ogg")) {
+	    load_sound(
+		name,
+		basePath + src, 
+		resource_loaded, resource_failed);
+
+	} 
+	else if (endswith(src.toLowerCase(), "png") || 
+		 endswith(src.toLowerCase(), "gif") || 
+		 endswith(src.toLowerCase(), "jpg")) 
+	{
+	    load_image(
+		name,
+		basePath + src, 
+		resource_loaded, resource_failed);
+	}
+    }
+    return resources;
 }

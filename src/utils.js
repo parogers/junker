@@ -134,3 +134,7 @@ function scroll_canvas(context, w, h, dx, dy)
     context.putImageData(data, x, y);
 }
 
+function endswith(str, sub)
+{
+    return (str.substr(-sub.length) == sub);
+}

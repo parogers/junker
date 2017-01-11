@@ -48,6 +48,7 @@ var WALL     = make_terrain(7, TERRAIN_META_BLOCKED);
 var FOG      = make_terrain(8, 0);
 var STONE    = make_terrain(9, TERRAIN_META_BLOCKED);
 var AIRSTRIP = make_terrain(10);
+var TRACK    = make_terrain(11);
 
 /* Maps a terrain name (used in terrain data files) to the terrain number
  * used internally. */
@@ -63,6 +64,7 @@ var TERRAIN_NAME_MAPPING = {
     "stone" : STONE,
     "fog" : FOG,
     "airstrip" : AIRSTRIP,
+    "track" : TRACK,
 };
 
 var SE_HOLE_TILE = 0;
@@ -99,6 +101,7 @@ var WALL_TILE_START = 85;
 var FOG_TILE_START = 100;
 var STONE_TILE_START = 115;
 var AIRSTRIP_TILE_START = 130;
+var TRACK_TILE_START = 145;
 
 /* Now map the terrain number onto the tile starting position within the 
  * big tile image. */
@@ -127,6 +130,7 @@ TERRAIN_TILE_START[WALL] = WALL_TILE_START;
 TERRAIN_TILE_START[FOG] = FOG_TILE_START;
 TERRAIN_TILE_START[STONE] = STONE_TILE_START;
 TERRAIN_TILE_START[AIRSTRIP] = AIRSTRIP_TILE_START;
+TERRAIN_TILE_START[TRACK] = TRACK_TILE_START;
 
 /* A set of tiles for rendering a tiled grid */
 function Tileset(img, tileWidth, tileHeight) 
@@ -532,8 +536,11 @@ function TerrainView(terrains, width, height)
     this.render = function(target, destx, desty) {
 	/* Renders a terrain (using this camera) onto the target graphics
 	 * context at the given  position */
-	if (this.xoffset < 0 || this.yoffset < 0) {
-	    throw "Cell offset is negative";
+	if (this.xoffset < 0) {
+	    throw "Cell X-offset is negative";
+	}
+	if (this.yoffset < 0) {
+	    throw "Cell Y-offset is negative";
 	}
 	target.drawImage(
 	    this.canvas, // source image

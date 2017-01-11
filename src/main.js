@@ -20,79 +20,90 @@
 /* main.js */
 
 /* TODO - put this into a JSON config file */
-var IMAGES = {
-    "dot" : "image.png", 
-    "dot2" : "image2.png", 
-    "title" : "junker-title.png", 
-    "bg3" : "bg.jpg",
-    "bg2" : "bg2.png",
-    "tiles" : "tiles2.png",
+var RESOURCES = {
+    /* Images */
+    "images.dot" : "image.png", 
+    "images.dot2" : "image2.png", 
+    "images.title" : "junker-title.png", 
+    "images.bg3" : "bg.jpg",
+    "images.bg2" : "bg2.png",
+    "images.tiles" : "tiles2.png",
 
-    "shot1" : "shot/shot1.png",
-    "shot2" : "shot/shot2.png",
-    "shot3" : "shot/shot3.png",
-    "shot4" : "shot/shot4.png",
+    "images.shot1" : "shot/shot1.png",
+    "images.shot2" : "shot/shot2.png",
+    "images.shot3" : "shot/shot3.png",
+    "images.shot4" : "shot/shot4.png",
 
-    "bomb1" : "bomb/bomb1.png",
-    "bomb2" : "bomb/bomb2.png",
-    "bomb3" : "bomb/bomb3.png",
+    "images.bomb1" : "bomb/bomb1.png",
+    "images.bomb2" : "bomb/bomb2.png",
+    "images.bomb3" : "bomb/bomb3.png",
 
-    "tankBase1" : "player/tankbase1.png",
-    "tankBase2" : "player/tankbase2.png",
-    "tankBase3" : "player/tankbase3.png",
-    "tankBase4" : "player/tankbase4.png",
+    "images.tankBase1" : "player/tankbase1.png",
+    "images.tankBase2" : "player/tankbase2.png",
+    "images.tankBase3" : "player/tankbase3.png",
+    "images.tankBase4" : "player/tankbase4.png",
 
-    "explode1" : "explosion/explode1.png",
-    "explode2" : "explosion/explode2.png",
-    "explode3" : "explosion/explode3.png",
-    "explode4" : "explosion/explode4.png",
-    "explode5" : "explosion/explode5.png",
-    "explode6" : "explosion/explode6.png",
+    "images.explode1" : "explosion/explode1.png",
+    "images.explode2" : "explosion/explode2.png",
+    "images.explode3" : "explosion/explode3.png",
+    "images.explode4" : "explosion/explode4.png",
+    "images.explode5" : "explosion/explode5.png",
+    "images.explode6" : "explosion/explode6.png",
 
-    "big_explode1" : "big-explosion/explode1.png",
-    "big_explode2" : "big-explosion/explode2.png",
-    "big_explode3" : "big-explosion/explode3.png",
-    "big_explode4" : "big-explosion/explode4.png",
-    "big_explode5" : "big-explosion/explode5.png",
-    "big_explode6" : "big-explosion/explode6.png",
+    "images.big_explode1" : "big-explosion/explode1.png",
+    "images.big_explode2" : "big-explosion/explode2.png",
+    "images.big_explode3" : "big-explosion/explode3.png",
+    "images.big_explode4" : "big-explosion/explode4.png",
+    "images.big_explode5" : "big-explosion/explode5.png",
+    "images.big_explode6" : "big-explosion/explode6.png",
 
-    "pod1" : "pod/pod1.png",
-    "pod2" : "pod/pod2.png",
-    "pod3" : "pod/pod3.png",
-    "pod4" : "pod/pod4.png",
-    "pod5" : "pod/pod5.png",
-    "pod6" : "pod/pod6.png",
+    "images.pod1" : "pod/pod1.png",
+    "images.pod2" : "pod/pod2.png",
+    "images.pod3" : "pod/pod3.png",
+    "images.pod4" : "pod/pod4.png",
+    "images.pod5" : "pod/pod5.png",
+    "images.pod6" : "pod/pod6.png",
 
-    "tankWater" : "player/tankbase-water.png",
-    "tankGun" : "player/tank-gun.png",
-    "turretBase" : "turret/turret-base.png",
-    "turretGun" : "turret/turret-gun.png",
-    "testing" : "testing.gif",
+    "images.podEmitter1" : "pod/emitter2.png",
+    "images.podEmitter2" : "pod/emitter1.png",
 
-    "jet" : "jet/jet-north.png",
-    "jetLeft" : "jet/jet-bank-left.png",
-    "jetRight" : "jet/jet-bank-right.png",
-    "jetFlame1" : "jet/flame1.png",
-    "jetFlame2" : "jet/flame2.png",
+    "images.fire1" : "fire1.png",
+    "images.fire2" : "fire2.png",
 
-    "powerupMultishot" : "powerups/multishot.png",
-    "powerupBomb" : "powerups/bomb.png"
-};
+    "images.bunkerOpen" : "bunker/bunker-open.png",
+    "images.bunkerClosed" : "bunker/bunker-closed.png",
 
-var AUDIO = {
-    "motorIdle" : "audio/motor-idle.ogg",
-    "motorRun" : "audio/motor-run.ogg",
-    "shot1" : "audio/shot1.wav",
-    "shot2" : "audio/shot2.wav",
-    "shot3" : "audio/shot3.wav",
-    "shot4" : "audio/shot4.wav",
-    "hit1" : "audio/hit1.wav",
-    "explode1" : "audio/explode1.wav",
-    "explode2" : "audio/explode2.wav",
-    "explode3" : "audio/explode3.wav",
-    /*"music" : "audio/manoeuvre_0.ogg",*/
-    "splash" : "audio/splash.wav",
-    "rumble" : "audio/rumble.wav",
+    "images.tankWater" : "player/tankbase-water.png",
+    "images.tankGun" : "player/tank-gun.png",
+    "images.turretBase" : "turret/turret-base.png",
+    "images.turretGun" : "turret/turret-gun.png",
+    "images.testing" : "testing.gif",
+
+    "images.jet" : "jet/jet-north.png",
+    "images.jetLeft" : "jet/jet-bank-left.png",
+    "images.jetRight" : "jet/jet-bank-right.png",
+    "images.jetFlame1" : "jet/flame1.png",
+    "images.jetFlame2" : "jet/flame2.png",
+
+    "images.powerupFlameShot" : "powerups/flameshot.png",
+    "images.powerupMultiShot" : "powerups/multishot.png",
+    "images.powerupBomb" : "powerups/bomb.png",
+    "images.powerupSpeed" : "powerups/speed.png",
+
+    /* Audio */
+    "sounds.motorIdle" : "audio/motor-idle.ogg",
+    "sounds.motorRun" : "audio/motor-run.ogg",
+    "sounds.shot1" : "audio/shot1.wav",
+    "sounds.shot2" : "audio/shot2.wav",
+    "sounds.shot3" : "audio/shot3.wav",
+    "sounds.shot4" : "audio/shot4.wav",
+    "sounds.hit1" : "audio/hit1.wav",
+    "sounds.explode1" : "audio/explode1.wav",
+    "sounds.explode2" : "audio/explode2.wav",
+    "sounds.explode3" : "audio/explode3.wav",
+    "sounds.splash" : "audio/splash.wav",
+    "sounds.rumble" : "audio/rumble.wav",
+    "sounds.powerup" : "audio/powerup.wav",
 };
 
 var gameState = null;
@@ -136,8 +147,24 @@ function documentLoaded(cvs)
 
     canvas.focus();
 
-    resources = new Resources("../media/", IMAGES, AUDIO, main);
-    resources.load();
+    //resources = new Resources("../media/", IMAGES, AUDIO, main);
+    //resources.load();
+
+    resources = load_resources(
+	"../media/",
+	RESOURCES,
+	function(res) {
+	    log_message("Finished loading resources");
+	    setTimeout(main, 0);
+	},
+	function(name) {
+	    log_message("Error loading: " + RESOURCES[name]);
+	},
+	function(name) {
+	    log_message("Loaded: " + RESOURCES[name]);
+	}
+    );
+
 }
 
 /************/
@@ -200,6 +227,9 @@ function main()
 
     resources.bombAudio = new AudioPool(resources.sounds.explode3);
     resources.bombAudio.set_volume(0.4);
+
+    resources.powerupAudio = new AudioPool(resources.sounds.powerup);
+    resources.powerupAudio.set_volume(0.5);
 
     //resources.explodeTurretAudio = new AudioPool(resources.sounds.explode1);
     //resources.explodeTurretAudio.set_volume(0.2);

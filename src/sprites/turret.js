@@ -32,7 +32,8 @@ function Turret()
     this.firingRate = 0.7+0.5*Math.random();
     /* Speed of fired projectiles in pixels/sec */
     this.shotSpeed = 150;
-    this.health = 3;
+    this.maxHealth = 3;
+    this.health = this.maxHealth;
     /* Maximum turning speed of the turret in radians per sec */
     //this.turnSpeed = 3.14/2;
     this.explodeTimer = 0;
@@ -53,6 +54,13 @@ Turret.prototype.update = function(dt)
 	this.explodeTimer -= dt;
 	if (this.explodeTimer <= 0) 
 	{
+	    for (var n = 0; n < 5; n++) {
+		var fire = new Fire();
+		fire.duration = 5+3*Math.random();
+		fire.x = this.x + 20*(Math.random()-0.5);
+		fire.y = this.y + 20*(Math.random()-0.5);
+		fire.spawn(this.level);
+	    }
 	    this.level.remove_sprite(this.gunSprite);
 	    this.level.remove_sprite(this);
 	    return;
@@ -70,7 +78,9 @@ Turret.prototype.update = function(dt)
     var dx = (this.level.player.x - this.x);
     var dy = (this.level.player.y - this.y);
     var playerDist = Math.sqrt(dx*dx + dy*dy);
-    this.tracking = (playerDist < 300);
+    var engageDist = Math.max(this.level.terrainView.width,
+			      this.level.terrainView.height)/1.5;
+    this.tracking = (playerDist < engageDist) || this.health < this.maxHealth;
 
     /* Periodically shoot at the player */
     if (this.tracking) 

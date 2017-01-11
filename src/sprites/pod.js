@@ -22,11 +22,9 @@ function Pod()
     /* Constructor */
     Sprite.call(this);
 
-    /* Maximum number of shots per second */
-    this.firingRate = 1.25+0.5*Math.random();
     /* Speed of fired projectiles in pixels/sec */
     this.shotSpeed = 300;
-    this.maxHealth = 3;
+    this.maxHealth = 1;
     this.explodeTimer = 0;
     this.fps = 8;
     this.frame = 0;
@@ -37,6 +35,7 @@ function Pod()
     /* Cooldown counter between shots (calculate from the rate and 
      * decremented in 'update') */
     this.cooldown = 0;
+    this.active = false;
 }
 
 Pod.prototype = new Sprite;
@@ -59,7 +58,7 @@ Pod.prototype.update = function(dt)
 	return;
     }
 
-    if (this.level.check_pos_visible(this.x, this.y))
+    if (this.active || this.level.check_pos_visible(this.x, this.y))
     {
 	/* Move towards the player */
 	var dirx = this.level.player.x - this.x;
@@ -80,8 +79,8 @@ Pod.prototype.update = function(dt)
 	diry = dt * this.speed * diry / mag;
 
 	this.do_normal_move(dirx, diry);
+	this.active = true;
     }
-
 }
 
 /* Called to spawn this sprite into the level */
