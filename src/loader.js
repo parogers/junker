@@ -67,6 +67,7 @@ function parse_level(data)
 
 	classes = {
 	    "turret" : Turret,
+	    "trainturret" : TrainTurret,
 	    "jet" : Jet,
 	    "pod" : Pod,
 	    "speed" : SpeedPowerup,

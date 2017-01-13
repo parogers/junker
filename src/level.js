@@ -123,6 +123,18 @@ function Level(tileset, rows, cols)
 	return NOTHING;
     }
 
+    /* Returns the terrain type (ground) at the given map position */
+    this.get_midground_terrain = function(x, y)
+    {
+	var row = (y/(2*TILEW))|0;
+	var col = (x/(2*TILEW))|0;
+	if (row >= 0 && row < this.ground.rows &&
+	    col >= 0 && col < this.ground.cols) {
+	    return this.midground[row][col];
+	}
+	return NOTHING;
+    }
+
     /* Checks if the given map position is currently visible */
     this.check_pos_visible = function(x, y)
     {
