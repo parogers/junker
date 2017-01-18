@@ -87,7 +87,7 @@ function GameStateMachine()
 	    },
 	    update: function() {
 		/* Waiting for the above code to load the level */
-		if (resources.level !== null) {
+		if (resources.level) {
 		    return "gameplay";
 		}
 	    },

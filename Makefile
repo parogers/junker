@@ -1,2 +1,2 @@
-src/levels/demo.json: media/testlevel.xcf
-	./tools/makelevel.py media/testlevel.xcf src/levels/demo.json
+src/levels/demo.json: media/demolevel.xcf
+	./tools/makelevel.py media/demolevel.xcf src/levels/demo.json

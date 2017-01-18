@@ -24,6 +24,13 @@ function StateMachine(states)
     this.states = states;
     this.current = "";
     this.lastTime = null;
+    /* Cache a handler for our 'draw_frame' method that we can pass into
+     * requestAnimFrame below */
+    this.drawHandler = function(st) {
+	return function() {
+	    st.draw_frame();
+	}
+    }(this);
 
     /* Returns the current state we are in */
     this.get_state = function()
@@ -72,11 +79,12 @@ function StateMachine(states)
 	}
 
 	/* Schedule the next frame draw */
-	requestAnimFrame(function(st) {
+	/*requestAnimFrame(function(st) {
 	    return function() {
 		st.draw_frame();
 	    }
-	}(this));
+	}(this));*/
+	requestAnimFrame(this.drawHandler);
     }
 
     this.change_state = function(next) 
