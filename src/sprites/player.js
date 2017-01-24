@@ -20,12 +20,22 @@
 /* player.js */
 
 var MOTOR_SOUNDS = true;
+var WELCOME_TEXT = [
+    "WELCOME TO",
+    "THE DEMO!",
+    "MOUSE AIMS.",
+    "WADS MOVES.",
+    "HAVE FUN!",
+];
 
 function Player()
 {
     /* Constructor */
     Sprite.call(this);
 
+    /* Which line of the welcome text is being shown */
+    this.welcomeText = 0;
+    this.welcomeTimer = 0;
     this.speedLevels = [125, 150, 175, 200];
     this.multishot = false;
     this.barrelLength = 15;
@@ -106,9 +116,24 @@ Player.prototype.update = function(dt)
 	}
     }
 
+    if (this.welcomeText >= 0) {
+	this.welcomeTimer -= dt;
+	if (this.welcomeTimer <= 0) {
+	    this.welcomeTimer = 1;
+	    /* Show the next line of welcome text */
+	    this.show_text(WELCOME_TEXT[this.welcomeText], 
+			   "rgb(255,255,0)", 4);
+	    this.welcomeText += 1;
+	    if (this.welcomeText >= WELCOME_TEXT.length) {
+		/* No more text to show */
+		this.welcomeText = -1;
+	    }
+	}
+    }
+
     /* Check that the new position isn't blocked */
     this.moving = false;
-    if (mag > 0)
+    if (mag > 0 && this.y + dy < this.level.terrainView.ypos + this.level.terrainView.height)
     {
 	this.moving = true;
 	/* Move the player tank */
@@ -242,14 +267,7 @@ Player.prototype.collect_powerup = function(powerup)
 	"flameshot" : "FLAMESHOT",
 	"bomb" : "BOMB"};
 
-    var t = new Text(names[powerup.type], 2, 
-		     {text_colour: "rgb(255,255,0)",
-		      text_height: 15});
-    t.x = this.x;
-    t.y = this.y;
-    t.velx = 0;
-    t.vely = -15;
-    t.spawn(this.level);
+    this.show_text(names[powerup.type], "rgb(255,255,0)");
 }
 
 Player.prototype.spawn = function(level)
@@ -274,3 +292,15 @@ Player.prototype.handle_shot_collision = function(shot)
     }*/
     return true;
 }
+
+Player.prototype.show_text = function(txt, colour, duration)
+{
+    if (!duration) duration = 2;
+    var t = new Text(txt, duration, {text_colour: colour, text_height: 15});
+    t.x = this.x;
+    t.y = this.y;
+    t.velx = 0;
+    t.vely = -25;
+    t.spawn(this.level);
+}
+

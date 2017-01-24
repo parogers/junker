@@ -25,6 +25,7 @@ function Text(text, duration, args)
     this.velx = 0;
     this.vely = 0;
     this.text = text;
+    this.startDuration = duration;
     this.duration = duration;
     if (args) {
 	this.text_colour = args.text_colour;
@@ -64,7 +65,6 @@ Text.prototype.spawn = function(level)
     var y = canvas.height;
     /* Render the text shadow */
     context.fillText(this.text, x, y);
-
     this.set_image(canvas);
 }
 

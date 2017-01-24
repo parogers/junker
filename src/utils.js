@@ -25,8 +25,7 @@ MOUSE_RIGHT = 2
 
 /* Cross platform way of requesting an animation update
  * (see http://jlongster.com/Making-Sprite-based-Games-with-Canvas) */
-var requestAnimFrame = (function() {
-    return (
+var requestAnimFrame =
 	window.requestAnimationFrame ||
 	window.webkitRequestAnimationFrame ||
 	window.mozRequestAnimationFrame ||
@@ -34,8 +33,7 @@ var requestAnimFrame = (function() {
 	window.msRequestAnimationFrame ||
 	function(callback){
 	    window.setTimeout(callback, 1000 / 60);
-	});
-})();
+	};
 
 /* Stop an event from propagating and triggering any browser default actions */
 function utils_stop_event(event)
