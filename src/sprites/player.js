@@ -35,7 +35,7 @@ function Player()
 
     /* Which line of the welcome text is being shown */
     this.welcomeText = 0;
-    this.welcomeTimer = 0;
+    this.welcomeTimer = 1;
     this.speedLevels = [125, 150, 175, 200];
     this.multishot = false;
     this.barrelLength = 15;
@@ -298,7 +298,7 @@ Player.prototype.show_text = function(txt, colour, duration)
     if (!duration) duration = 2;
     var t = new Text(txt, duration, {text_colour: colour, text_height: 15});
     t.x = this.x;
-    t.y = this.y;
+    t.y = this.y-10;
     t.velx = 0;
     t.vely = -25;
     t.spawn(this.level);
